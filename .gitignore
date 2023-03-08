@@ -127,3 +127,12 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Sunshine
+studio.json
+work.mcscfg
+world_behavior_packs.json
+world_resource_packs.json
+
+# IDEA
+.idea
