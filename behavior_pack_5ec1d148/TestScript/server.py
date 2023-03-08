@@ -5,7 +5,7 @@ from modbe.enum import *
 
 
 def main():
-    Callback.register("entityAdded", entityAdded)  # 目前之加入了一个回调`entityAdded`
+    Callback.register("entityAdded", entityAdded)  # 目前只加入了一个回调`entityAdded`
 
 
 def entityAdded(entity, entityType, pos, dimension, isBaby, itemName, auxValue):
