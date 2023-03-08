@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+
 import mod.server.extraServerApi as extraServerApi
 import mod.client.extraClientApi as extraClientApi
 import common.gameConfig as GameConfig
@@ -28,8 +29,9 @@ class ModBE:
         if ModBE.isServer():
             server = extraServerApi.GetSystem("ModBE", "Server")
             server._cancelEvent = True
-        # if ModBE.isClient():
-        #   client._cancelEvent = True
+        if ModBE.isClient():
+            client = extraClientApi.GetSystem("ModBE", "Client")
+            client._cancelEvent = True
 
     @staticmethod
     def log(logType, logLevel, logArea, message, *args):
@@ -62,6 +64,14 @@ class Callback:
                     Callback._serverRegistered[name].append(hook)
                 else:
                     Callback._serverRegistered[name] = [hook]
+                ModBE.log(LogType.debug, LogLevel.verbose, "ModBE", "Server Callback: '%s' registered.", name)
+        if ModBE.isClient():
+            if name in Callback._clientCallbacks:
+                if name in Callback._clientRegistered:
+                    Callback._clientRegistered[name].append(hook)
+                else:
+                    Callback._clientRegistered[name] = [hook]
+                ModBE.log(LogType.debug, LogLevel.verbose, "ModBE", "Client Callback: '%s' registered.", name)
 
     @staticmethod
     def invoke(name, *args):

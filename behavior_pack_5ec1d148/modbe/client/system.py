@@ -1,46 +1,43 @@
 # -*- coding: utf-8 -*-
 
-import server.extraServerApi as extraApi
+import client.extraClientApi as extraApi
 import common.system.eventConf as eventConfig
 
-import modbe.server.event.response as EventResponse
+import modbe.client.event.response as EventResponse
 from modbe.module import ModBE
 from modbe.enum import *
 
-ServerSystem = extraApi.GetServerSystemCls()
-eventDict = eventConfig.SystemServerEventDict
+ClientSystem = extraApi.GetClientSystemCls()
+eventDict = eventConfig.SystemClientEventDict
 
 
-class ModBEServerSystem(ServerSystem):
+class ModBEClientSystem(ClientSystem):
 
     def __init__(self, namespace, systemName):
-        ModBE.log(LogType.debug, LogLevel.verbose, "ModBE", "Server Initializing.")
-        ServerSystem.__init__(self, namespace, systemName)
+        ModBE.log(LogType.debug, LogLevel.verbose, "ModBE", "Client Initializing.")
+        ClientSystem.__init__(self, namespace, systemName)
         self._cancelEvent = False
         self.listen()
 
     def listen(self):
-        ModBE.log(LogType.debug, LogLevel.verbose, "ModBE", "Server Listening.")
+        ModBE.log(LogType.debug, LogLevel.verbose, "ModBE", "Client Listening.")
         for key in eventDict:
             if hasattr(self, "on" + key.split(":")[2]):
                 self.ListenForEventEngine(key.split(":")[2], self, getattr(self, "on" + key.split(":")[2]))
-                ModBE.log(LogType.debug, LogLevel.verbose, "ModBE", "Server '%s' Listened.", key.split(":")[2])
+                ModBE.log(LogType.debug, LogLevel.verbose, "ModBE", "Client '%s' Listened.", key.split(":")[2])
 
     def response(self, eventId, args):
-        ModBE.log(LogType.debug, LogLevel.verbose, "ModBE", "Server Responsing.")
+        ModBE.log(LogType.debug, LogLevel.verbose, "ModBE", "Client Responsing.")
         if hasattr(EventResponse, "on" + eventId):
             getattr(EventResponse, "on" + eventId)(args)
-            ModBE.log(LogType.debug, LogLevel.verbose, "ModBE", "Server '%s' Responsed.", eventId)
+            ModBE.log(LogType.debug, LogLevel.verbose, "ModBE", "Client '%s' Responsed.", eventId)
         if self._cancelEvent:
             if hasattr(args, "ret"):
                 args["ret"] = True
             elif hasattr(args, "cancel"):
                 args["cancel"] = True
             self._cancelEvent = False
-            ModBE.log(LogType.debug, LogLevel.verbose, "ModBE", "Server '%s' Response Canceled.", eventId)
-
-    def onAddEntityServerEvent(self, args):
-        self.response("AddEntityServerEvent", args)
+            ModBE.log(LogType.debug, LogLevel.verbose, "ModBE", "Client '%s' Response Canceled.", eventId)
 
     def Update(self):
         """

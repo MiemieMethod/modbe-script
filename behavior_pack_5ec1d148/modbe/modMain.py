@@ -30,3 +30,12 @@ class ModBE(object):
     @Mod.DestroyServer()
     def serverDestroy(self):
         Game.log(LogType.debug, LogLevel.verbose, "ModBE", "Server Destroyed.")
+
+    @Mod.InitClient()
+    def client(self):
+        extraServerApi.RegisterSystem("ModBE", "Client", "modbe.client.system.ModBEClientSystem")
+        Game.log(LogType.debug, LogLevel.verbose, "ModBE", "Client Initialized.")
+
+    @Mod.DestroyClient()
+    def clientDestroy(self):
+        Game.log(LogType.debug, LogLevel.verbose, "ModBE", "Client Destroyed.")
