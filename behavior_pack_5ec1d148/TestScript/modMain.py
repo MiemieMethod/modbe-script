@@ -15,6 +15,6 @@ class ModBETest(object):
     def __init__(self):
         if ModBE.isServer():
             serverMain()
-        if ModBE.isServer():
+        if ModBE.isClient():
             clientMain()
         ModBE.log(LogType.info, LogLevel.inform, "ModBETest", "Mod Initialized.")  # 用于输出日志
