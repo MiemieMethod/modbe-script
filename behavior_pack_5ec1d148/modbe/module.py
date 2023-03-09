@@ -565,7 +565,7 @@ class ListTag(Tag):
         return self
 
     def clone(self):
-        return ListTag(self._data)
+        return ListTag(self._list)
 
 
 class CompoundTag(Tag):
