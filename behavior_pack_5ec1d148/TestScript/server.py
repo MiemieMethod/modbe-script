@@ -41,4 +41,7 @@ def entityAddedSimple(entity, *args):
 
 
 def itemUsed(entity, oldName, oldAux):
+    print(Block.getStatesFromAux("minecraft:log", 10))
+    ModBE.log(LogType.info, LogLevel.inform, "Test", "Actor used Item: %s of type %s.", entity.getUniqueID(),
+              entity.getEntityTypeId())
     ModBE.log(LogType.info, LogLevel.inform, "Test", "item Used: type %s and aux %s.", oldName, oldAux)

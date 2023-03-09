@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from common.minecraftEnum import *
+from common import CompoundTag
 
 
 class LogType:
@@ -22,3 +23,7 @@ class LogLevel:
         # type: (int) -> str
         mapping = ["Verbose", "Inform", "Warning", "Error"]
         return mapping[level]
+
+
+class TagType(CompoundTag.Type):
+    pass
