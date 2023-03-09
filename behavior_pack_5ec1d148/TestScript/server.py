@@ -5,7 +5,9 @@ from modbe.enum import *
 
 
 def main():
-    Callback.register("entityAdded", entityAdded)  # 目前只加入了一个回调`entityAdded`
+    # Callback.register("entityAdd", entityAdded)  # 目前只加入了一个回调`entityAdded`
+    # Callback.register("entityAdd", entityAddedSimple)
+    Callback.register("itemUse", itemUsed)
 
 
 def entityAdded(entity, entityType, pos, dimension, isBaby, itemName, auxValue):
@@ -36,3 +38,7 @@ def entityAddedSimple(entity, *args):
     """
     ModBE.log(LogType.info, LogLevel.inform, "Test", "Actor Added Simple: %s of type %s.", entity.getUniqueID(),
               entity.getEntityTypeId())
+
+
+def itemUsed(entity, oldName, oldAux):
+    ModBE.log(LogType.info, LogLevel.inform, "Test", "item Used: type %s and aux %s.", oldName, oldAux)

@@ -4,7 +4,7 @@ import client.extraClientApi as extraApi
 import common.system.eventConf as eventConfig
 
 import modbe.client.event.response as EventResponse
-from modbe.module import ModBE
+from modbe.module import ModBE, Level
 from modbe.enum import *
 
 ClientSystem = extraApi.GetClientSystemCls()
@@ -21,10 +21,17 @@ class ModBEClientSystem(ClientSystem):
 
     def listen(self):
         ModBE.log(LogType.debug, LogLevel.verbose, "ModBE", "Client Listening.")
+        item = extraApi.GetEngineCompFactory().CreateItem(Level.getLevelId())
         for key in eventDict:
             if hasattr(self, "on" + key.split(":")[2]):
-                self.ListenForEventEngine(key.split(":")[2], self, getattr(self, "on" + key.split(":")[2]))
+                item.GetUserDataInEvent(key.split(":")[2])
+                self.listenForEventEngine(key.split(":")[2], self, getattr(self, "on" + key.split(":")[2]))
                 ModBE.log(LogType.debug, LogLevel.verbose, "ModBE", "Client '%s' Listened.", key.split(":")[2])
+
+    def listenForEventEngine(self, eventName, instance, func, priority = 0):
+        namespace = 'Minecraft'
+        systemName = 'Engine'
+        self.ListenForEvent(namespace, systemName, eventName, instance, func, priority)
 
     def response(self, eventId, args):
         ModBE.log(LogType.debug, LogLevel.verbose, "ModBE", "Client Responsing.")
@@ -32,12 +39,18 @@ class ModBEClientSystem(ClientSystem):
             getattr(EventResponse, "on" + eventId)(args)
             ModBE.log(LogType.debug, LogLevel.verbose, "ModBE", "Client '%s' Responsed.", eventId)
         if self._cancelEvent:
-            if hasattr(args, "ret"):
+            if "ret" in args:
                 args["ret"] = True
-            elif hasattr(args, "cancel"):
+            elif "cancel" in args:
                 args["cancel"] = True
             self._cancelEvent = False
             ModBE.log(LogType.debug, LogLevel.verbose, "ModBE", "Client '%s' Response Canceled.", eventId)
+
+    def onClientItemTryUseEvent(self, args):
+        self.response("ClientItemTryUseEvent", args)
+
+    def onClientItemUseEvent(self, args):
+        self.response("ClientItemUseEvent", args)
 
     def Update(self):
         """
