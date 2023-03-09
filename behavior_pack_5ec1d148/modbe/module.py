@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-
 import mod.server.extraServerApi as extraServerApi
 import mod.client.extraClientApi as extraClientApi
 import common.gameConfig as GameConfig
@@ -66,15 +65,12 @@ class Callback(object):
     _serverCallbacks = {
         "entityAdd": "AddEntityServerEvent",  # (entity, entityType, pos, dimension, isBaby, itemName, auxValue) # type: (Actor, str, Pos, int, bool, str, int) -> None
         "itemUse": "ServerItemUseEvent",  # (entity, oldName, oldAux) # type: (Actor, str, int) -> None
-        "itemTryUse": "ServerItemTryUseEvent"
-        # (entity, oldName, oldAux, itemStack) # type: (Actor, str, int, ItemStack) -> None
+        "itemTryUse": "ServerItemTryUseEvent"  # (entity, oldName, oldAux, itemStack) # type: (Actor, str, int, ItemStack) -> None
     }
     _serverRegistered = {}
     _clientCallbacks = {
-        "itemUse": "ClientItemUseEvent",
-        # (entity, oldName, oldAux, itemStack) # type: (Actor, str, int, ItemStack) -> None
-        "itemTryUse": "ClientItemTryUseEvent"
-        # (entity, oldName, oldAux, itemStack) # type: (Actor, str, int, ItemStack) -> None
+        "itemUse": "ClientItemUseEvent",  # (entity, oldName, oldAux, itemStack) # type: (Actor, str, int, ItemStack) -> None
+        "itemTryUse": "ClientItemTryUseEvent"  # (entity, oldName, oldAux, itemStack) # type: (Actor, str, int, ItemStack) -> None
     }
     _clientRegistered = {}
 
@@ -186,8 +182,7 @@ class Actor(object):
                 server = extraServerApi.GetSystem("ModBE", "Server")
                 server.DestroyEntity(self._uniqueID)
             else:
-                ModBE.log(LogType.error, LogLevel.error, "ModBE",
-                          "Actor.despawn: Client not supported for this method.")
+                ModBE.log(LogType.error, LogLevel.error, "ModBE", "Actor.despawn: Client not supported for this method.")
         else:
             ModBE.log(LogType.error, LogLevel.error, "ModBE", "Actor.despawn: Actor is not alive.")
 
@@ -211,8 +206,7 @@ class Actor(object):
             if ModBE.isServer():
                 return self._dimension.GetEntityDimensionId()
             else:
-                ModBE.log(LogType.error, LogLevel.error, "ModBE",
-                          "Actor.getDimensionId: Client not supported for this method.")
+                ModBE.log(LogType.error, LogLevel.error, "ModBE", "Actor.getDimensionId: Client not supported for this method.")
         else:
             ModBE.log(LogType.error, LogLevel.error, "ModBE", "Actor.getDimensionId: Actor is not alive.")
         return 0
@@ -226,8 +220,7 @@ class Actor(object):
                 item_dict = self._item.GetEntityItem(ItemPosType.CARRIED, 0, True)
                 # item =
             else:
-                ModBE.log(LogType.error, LogLevel.error, "ModBE",
-                          "Actor.getCarriedItem: Client not supported for this method.")
+                ModBE.log(LogType.error, LogLevel.error, "ModBE", "Actor.getCarriedItem: Client not supported for this method.")
         else:
             ModBE.log(LogType.error, LogLevel.error, "ModBE", "Actor.getCarriedItem: Actor is not alive.")
 
@@ -253,13 +246,11 @@ class Block(object):
         self._fullName = blockDict["name"]
         self._data = "aux" in blockDict and blockDict["aux"] or 0
         if ModBE.isServer():
-            self._factory = extraServerApi.GetEngineCompFactory()
-            self._info = self._factory.CreateBlockInfo(Level.getLevelId())
-            self._blockState = self._factory.CreateBlockState(Level.getLevelId())
+            pass
         if ModBE.isClient():
-            self._factory = extraClientApi.GetEngineCompFactory()
-            self._info = self._factory.CreateBlockInfo(Level.getLevelId())
-        self._serializationId = Block.getStatesFromAux(self._fullName, self._data)
+            pass
+        self._states = Block.getStatesFromAux(self._fullName, self._data)
+        self._serializationId = CompoundTag().putString("name", self._fullName).putInt("version", 0).putCompound("states", CompoundTag.fromDict(self._states))
 
     @staticmethod
     def getStatesFromAux(name, aux):
@@ -276,8 +267,7 @@ class Block(object):
         if ModBE.isServer():
             return self._info.GetBlockBasicInfo(self._fullName)
         else:
-            ModBE.log(LogType.error, LogLevel.error, "ModBE",
-                      "Block._getBlockBasicDict: Client not supported for this method.")
+            ModBE.log(LogType.error, LogLevel.error, "ModBE", "Block._getBlockBasicDict: Client not supported for this method.")
 
     def getBlockIdentifier(self):
         # type: () -> str
@@ -320,10 +310,23 @@ class Block(object):
         return self._getBlockBasicDict()["creativeCategory"]
 
     def getStates(self):
-        return self._serializationId
+        return self._states
+
+    def hasState(self, stateType):
+        if stateType in self._states:
+            return True
+        return False
+
+    def getState(self, stateType):
+        if self.hasState(stateType):
+            return self._states[stateType]
+        else:
+            ModBE.log(LogType.error, LogLevel.error, "ModBE", "Block.getState: Cannot find state '%s' in current Block.", stateType)
+        return None
 
 
 # Interfaces #
+
 
 class Pos(object):
 
@@ -352,21 +355,8 @@ class Tag(object):
 
     def __init__(self, typeId):
         self._type = typeId
-        if not self._data:
+        if not hasattr(self, "_data"):
             self._data = None
-
-    def get(self, *args):
-        return self._data
-
-    def put(self, data):
-        self._data = data
-        return self
-
-    def getId(self):
-        return self._type
-
-    def clone(self):
-        return Tag(self._type)
 
     @staticmethod
     def _typeIdToClass(typeId):
@@ -386,6 +376,19 @@ class Tag(object):
         ]
         return classes[typeId]
 
+    def get(self, *args):
+        return self._data
+
+    def put(self, data):
+        self._data = data
+        return self
+
+    def getId(self):
+        return self._type
+
+    def clone(self):
+        return Tag(self._type)
+
 
 class EndTag(Tag):
 
@@ -393,7 +396,7 @@ class EndTag(Tag):
         return object.__new__(cls)
 
     def __init__(self):
-        Tag.__init__(TagType.End)
+        Tag.__init__(self, TagType.End)
 
     def clone(self):
         return EndTag()
@@ -405,7 +408,7 @@ class ByteTag(Tag):
         return object.__new__(cls, data)
 
     def __init__(self, data=0):
-        Tag.__init__(TagType.Byte)
+        Tag.__init__(self, TagType.Byte)
         self._data = data
 
     def clone(self):
@@ -418,7 +421,7 @@ class ShortTag(Tag):
         return object.__new__(cls, data)
 
     def __init__(self, data=0):
-        Tag.__init__(TagType.Short)
+        Tag.__init__(self, TagType.Short)
         self._data = data
 
     def clone(self):
@@ -431,7 +434,7 @@ class IntTag(Tag):
         return object.__new__(cls, data)
 
     def __init__(self, data=0):
-        Tag.__init__(TagType.Int)
+        Tag.__init__(self, TagType.Int)
         self._data = data
 
     def clone(self):
@@ -444,7 +447,7 @@ class LongTag(Tag):
         return object.__new__(cls, data)
 
     def __init__(self, data=0):
-        Tag.__init__(TagType.Int64)
+        Tag.__init__(self, TagType.Int64)
         self._data = data
 
     def clone(self):
@@ -457,7 +460,7 @@ class FloatTag(Tag):
         return object.__new__(cls, data)
 
     def __init__(self, data=0.0):
-        Tag.__init__(TagType.Float)
+        Tag.__init__(self, TagType.Float)
         self._data = data
 
     def clone(self):
@@ -470,7 +473,7 @@ class DoubleTag(Tag):
         return object.__new__(cls, data)
 
     def __init__(self, data=0.0):
-        Tag.__init__(TagType.Double)
+        Tag.__init__(self, TagType.Double)
         self._data = data
 
     def clone(self):
@@ -483,7 +486,7 @@ class ByteArrayTag(Tag):
         return object.__new__(cls, data)
 
     def __init__(self, data=[]):
-        Tag.__init__(TagType.ByteArray)
+        Tag.__init__(self, TagType.ByteArray)
         self._data = data
 
     def clone(self):
@@ -496,7 +499,7 @@ class StringTag(Tag):
         return object.__new__(cls, data)
 
     def __init__(self, data=""):
-        Tag.__init__(TagType.String)
+        Tag.__init__(self, TagType.String)
         self._data = data
 
     def clone(self):
@@ -509,9 +512,39 @@ class ListTag(Tag):
         return object.__new__(cls, tagList)
 
     def __init__(self, tagList=[]):
-        Tag.__init__(TagType.List)
+        Tag.__init__(self, TagType.List)
         self._list = tagList
         self._listType = self.size() > 0 and self.get(0).getId() or TagType.End
+
+    @staticmethod
+    def fromList(rawList):
+        """
+        Python限制，无法正确设置非布尔值形态的Byte、Short、Long、Double作为元素，请手动设置
+        """
+        _list = ListTag()
+        if len(rawList) == 0:
+            return _list
+        else:
+            for element in rawList:
+                if isinstance(element, int):
+                    _list.add(IntTag(element))
+                elif isinstance(element, float):
+                    _list.add(FloatTag(element))
+                elif isinstance(element, str):
+                    _list.add(StringTag(element))
+                elif isinstance(element, bool):
+                    _list.add(ByteTag(element and 1 or 0))
+                elif isinstance(element, list):
+                    if len(element) > 0 and isinstance(element[0], int):
+                        _list.add(ByteArrayTag(element))
+                    else:
+                        _list.add(ListTag.fromList(element))
+                elif isinstance(element, dict):
+                    _list.add(CompoundTag.fromDict(element))
+                else:
+                    ModBE.log(LogType.error, LogLevel.error, "ModBE",
+                              "ListTag.fromList: Unsupported Type: '%s' added to a ListTag.", element)
+            return _list
 
     def size(self):
         return len(self._list)
@@ -541,8 +574,38 @@ class CompoundTag(Tag):
         return object.__new__(cls, data)
 
     def __init__(self, tagDict={}):
-        Tag.__init__(TagType.Compound)
+        Tag.__init__(self, TagType.Compound)
         self._tags = tagDict
+
+    @staticmethod
+    def fromDict(rawDict):
+        """
+        Python限制，无法正确设置非布尔值形态的Byte、Short、Long、Double和IntArray，请手动设置
+        """
+        compound = CompoundTag()
+        if len(rawDict) == 0:
+            return compound
+        for key in rawDict:
+            value = rawDict[key]
+            if isinstance(value, int):
+                compound.putInt(key, value)
+            elif isinstance(value, float):
+                compound.putFloat(key, value)
+            elif isinstance(value, str):
+                compound.putString(key, value)
+            elif isinstance(value, bool):
+                compound.putBoolean(key, value)
+            elif isinstance(value, list):
+                if len(value) > 0 and isinstance(value[0], int):
+                    compound.putByteArray(key, value)
+                else:
+                    compound.putList(key, ListTag.fromList(value))
+            elif isinstance(value, dict):
+                compound.putCompound(CompoundTag.fromDict(value))
+            else:
+                ModBE.log(LogType.error, LogLevel.error, "ModBE",
+                          "CompoundTag.fromDict: Unsupported Type: '%s' added to a CompoundTag key: '%s'.", value, key)
+        return compound
 
     def remove(self, name):
         # type: (str) -> bool
@@ -567,55 +630,55 @@ class CompoundTag(Tag):
     def getBoolean(self, name):
         # type: (str) -> ByteTag | None
         if self.contains(name, TagType.Byte):
-            return self._tags[name]
+            return self._tags[name].get()
         return None
 
     def getByte(self, name):
         # type: (str) -> ByteTag | None
         if self.contains(name, TagType.Byte):
-            return self._tags[name]
+            return self._tags[name].get()
         return None
 
     def getShort(self, name):
         # type: (str) -> ShortTag | None
         if self.contains(name, TagType.Short):
-            return self._tags[name]
+            return self._tags[name].get()
         return None
 
     def getInt(self, name):
         # type: (str) -> IntTag | None
         if self.contains(name, TagType.Int):
-            return self._tags[name]
+            return self._tags[name].get()
         return None
 
     def getLong(self, name):
         # type: (str) -> LongTag | None
         if self.contains(name, TagType.Int64):
-            return self._tags[name]
+            return self._tags[name].get()
         return None
 
     def getFloat(self, name):
         # type: (str) -> FloatTag | None
         if self.contains(name, TagType.Float):
-            return self._tags[name]
+            return self._tags[name].get()
         return None
 
     def getDouble(self, name):
         # type: (str) -> DoubleTag | None
         if self.contains(name, TagType.Double):
-            return self._tags[name]
+            return self._tags[name].get()
         return None
 
     def getByteArray(self, name):
         # type: (str) -> ByteArrayTag | None
         if self.contains(name, TagType.ByteArray):
-            return self._tags[name]
+            return self._tags[name].get()
         return None
 
     def getString(self, name):
         # type: (str) -> StringTag | None
         if self.contains(name, TagType.String):
-            return self._tags[name]
+            return self._tags[name].get()
         return None
 
     def getList(self, name):
@@ -633,6 +696,66 @@ class CompoundTag(Tag):
     def getIntArray(self, name):
         # type: (str) -> IntArrayTag | None
         if self.contains(name, TagType.IntArray):
+            return self._tags[name].get()
+        return None
+
+    def getBooleanTag(self, name):
+        # type: (str) -> ByteTag | None
+        if self.contains(name, TagType.Byte):
+            return self._tags[name]
+        return None
+
+    def getByteTag(self, name):
+        # type: (str) -> ByteTag | None
+        if self.contains(name, TagType.Byte):
+            return self._tags[name]
+        return None
+
+    def getShortTag(self, name):
+        # type: (str) -> ShortTag | None
+        if self.contains(name, TagType.Short):
+            return self._tags[name]
+        return None
+
+    def getIntTag(self, name):
+        # type: (str) -> IntTag | None
+        if self.contains(name, TagType.Int):
+            return self._tags[name]
+        return None
+
+    def getLongTag(self, name):
+        # type: (str) -> LongTag | None
+        if self.contains(name, TagType.Int64):
+            return self._tags[name]
+        return None
+
+    def getFloatTag(self, name):
+        # type: (str) -> FloatTag | None
+        if self.contains(name, TagType.Float):
+            return self._tags[name]
+        return None
+
+    def getDoubleTag(self, name):
+        # type: (str) -> DoubleTag | None
+        if self.contains(name, TagType.Double):
+            return self._tags[name]
+        return None
+
+    def getByteArrayTag(self, name):
+        # type: (str) -> ByteArrayTag | None
+        if self.contains(name, TagType.ByteArray):
+            return self._tags[name]
+        return None
+
+    def getStringTag(self, name):
+        # type: (str) -> StringTag | None
+        if self.contains(name, TagType.String):
+            return self._tags[name]
+        return None
+
+    def getIntArrayTag(self, name):
+        # type: (str) -> IntArrayTag | None
+        if self.contains(name, TagType.IntArray):
             return self._tags[name]
         return None
 
@@ -643,7 +766,7 @@ class CompoundTag(Tag):
 
     def putBoolean(self, name, value):
         # type: (str, bool) -> CompoundTag
-        self._tags[name] = ByteTag(value)
+        self._tags[name] = ByteTag(value and 1 or 0)
         return self
 
     def putByte(self, name, value):
@@ -688,12 +811,12 @@ class CompoundTag(Tag):
 
     def putList(self, name, value):
         # type: (str, ListTag) -> CompoundTag
-        self._tags[name] = ListTag(value)
+        self._tags[name] = value
         return self
 
     def putCompound(self, name, value):
         # type: (str, CompoundTag) -> CompoundTag
-        self._tags[name] = CompoundTag(value)
+        self._tags[name] = value
         return self
 
     def putIntArray(self, name, value):
@@ -714,7 +837,7 @@ class IntArrayTag(Tag):
         return object.__new__(cls, data)
 
     def __init__(self, data=[]):
-        Tag.__init__(TagType.IntArray)
+        Tag.__init__(self, TagType.IntArray)
         self._data = data
 
     def clone(self):
