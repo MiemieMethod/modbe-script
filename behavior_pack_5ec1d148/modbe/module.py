@@ -7,7 +7,7 @@ from mod_log import logger
 
 from modbe.enum import *
 
-__all__ = ["Level", "ModBE", "Callback", "Actor", "Player", "Block", "Pos", "Tag", "EndTag", "ByteTag", "ShortTag", "IntTag", "LongTag", "FloatTag", "DoubleTag", "ByteArrayTag", "StringTag", "ListTag", "CompoundTag", "IntArrayTag"]
+__all__ = ["Level", "ModBE", "Callback", "Actor", "Player", "Block", "Item", "ItemStack", "Pos", "Tag", "EndTag", "ByteTag", "ShortTag", "IntTag", "LongTag", "FloatTag", "DoubleTag", "ByteArrayTag", "StringTag", "ListTag", "CompoundTag", "IntArrayTag"]
 
 
 # Modules #
@@ -134,7 +134,7 @@ class Actor(object):
             return object.__new__(cls, uniqueID)
 
     def __init__(self, uniqueID):
-        self._uniqueID = uniqueID or "0"
+        self._uniqueID = uniqueID or "-1"
         if ModBE.isServer():
             self._type = _factory.CreateEngineType(self._uniqueID)
             self._dimension = _factory.CreateDimension(self._uniqueID)
@@ -242,23 +242,41 @@ class Block(object):
     if ModBE.isClient():
         _info = _factory.CreateBlockInfo(Level.getLevelId())
 
-    def __init__(self, blockDict):
-        self._fullName = blockDict["name"]
-        self._data = "aux" in blockDict and blockDict["aux"] or 0
+    def __init__(self, fullName, aux=0):
+        self._fullName = fullName
+        self._data = aux
         if ModBE.isServer():
-            pass
+            self._states = Block.getStatesFromAux(self._fullName, self._data)
+            self._serializationId = CompoundTag().putString("name", self._fullName).putInt("version", 0).putCompound(
+                "states", CompoundTag.fromDict(self._states))
         if ModBE.isClient():
             pass
-        self._states = Block.getStatesFromAux(self._fullName, self._data)
-        self._serializationId = CompoundTag().putString("name", self._fullName).putInt("version", 0).putCompound("states", CompoundTag.fromDict(self._states))
+
+    @staticmethod
+    def fromDict(blockDict):
+        return Block(blockDict["name"], "aux" in blockDict and blockDict["aux"] or 0)
 
     @staticmethod
     def getStatesFromAux(name, aux):
-        return Block._blockState.GetBlockStatesFromAuxValue(name, aux)
+        """
+        仅服务端
+        """
+        if ModBE.isServer():
+            return Block._blockState.GetBlockStatesFromAuxValue(name, aux)
+        else:
+            ModBE.log(LogType.error, LogLevel.error, "ModBE",
+                      "Block.getStatesFromAux: Client not supported for this method.")
 
     @staticmethod
     def getAuxFromStates(name, states):
-        return Block._blockState.GetBlockStatesFromAuxValue(name, states)
+        """
+        仅服务端
+        """
+        if ModBE.isServer():
+            return Block._blockState.GetBlockStatesFromAuxValue(name, states)
+        else:
+            ModBE.log(LogType.error, LogLevel.error, "ModBE",
+                      "Block.getAuxFromStates: Client not supported for this method.")
 
     def _getBlockBasicDict(self):
         """
@@ -279,50 +297,207 @@ class Block(object):
 
     def getRenderLayer(self):
         # type: () -> int
-        return self._getBlockBasicDict()["renderLayer"]
+        """
+        仅服务端
+        """
+        if ModBE.isServer():
+            return self._getBlockBasicDict()["renderLayer"]
+        else:
+            ModBE.log(LogType.error, LogLevel.error, "ModBE", "Block.getRenderLayer: Client not supported for this method.")
 
     def getDestroySpeed(self):
         # type: () -> float
-        return self._getBlockBasicDict()["destroyTime"]
+        """
+        仅服务端
+        """
+        if ModBE.isServer():
+            return self._getBlockBasicDict()["destroyTime"]
+        else:
+            ModBE.log(LogType.error, LogLevel.error, "ModBE", "Block.getDestroySpeed: Client not supported for this method.")
 
     def getSolid(self):
         # type: () -> bool
-        return self._getBlockBasicDict()["solid"]
+        """
+        仅服务端
+        """
+        if ModBE.isServer():
+            return self._getBlockBasicDict()["solid"]
+        else:
+            ModBE.log(LogType.error, LogLevel.error, "ModBE", "Block.getSolid: Client not supported for this method.")
 
     def getExplosionResistance(self):
         # type: () -> float
-        return self._getBlockBasicDict()["explosionResistance"]
+        """
+        仅服务端
+        """
+        if ModBE.isServer():
+            return self._getBlockBasicDict()["explosionResistance"]
+        else:
+            ModBE.log(LogType.error, LogLevel.error, "ModBE", "Block.getExplosionResistance: Client not supported for this method.")
 
     def getLightEmission(self):
         # type: () -> int
-        return self._getBlockBasicDict()["blockLightEmission"]
+        """
+        仅服务端
+        """
+        if ModBE.isServer():
+            return self._getBlockBasicDict()["blockLightEmission"]
+        else:
+            ModBE.log(LogType.error, LogLevel.error, "ModBE", "Block.getLightEmission: Client not supported for this method.")
 
     def getLight(self):
         # type: () -> int
-        return self._getBlockBasicDict()["blockLightAbsorption"]
+        """
+        仅服务端
+        """
+        if ModBE.isServer():
+            return self._getBlockBasicDict()["blockLightAbsorption"]
+        else:
+            ModBE.log(LogType.error, LogLevel.error, "ModBE", "Block.getLight: Client not supported for this method.")
 
     def getMapColor(self):
         # type: () -> str
-        return self._getBlockBasicDict()["mapColor"]
+        """
+        仅服务端
+        """
+        if ModBE.isServer():
+            return self._getBlockBasicDict()["mapColor"]
+        else:
+            ModBE.log(LogType.error, LogLevel.error, "ModBE", "Block.getMapColor: Client not supported for this method.")
 
     def getCreativeCategory(self):
         # type: () -> int
-        return self._getBlockBasicDict()["creativeCategory"]
+        """
+        仅服务端
+        """
+        if ModBE.isServer():
+            return self._getBlockBasicDict()["creativeCategory"]
+        else:
+            ModBE.log(LogType.error, LogLevel.error, "ModBE", "Block.getCreativeCategory: Client not supported for this method.")
 
     def getStates(self):
-        return self._states
+        """
+        仅服务端
+        """
+        if ModBE.isServer():
+            return self._states
+        else:
+            ModBE.log(LogType.error, LogLevel.error, "ModBE",
+                      "Block.getStates: Client not supported for this method.")
 
     def hasState(self, stateType):
-        if stateType in self._states:
-            return True
-        return False
+        """
+        仅服务端
+        """
+        if ModBE.isServer():
+            if stateType in self._states:
+                return True
+            return False
+        else:
+            ModBE.log(LogType.error, LogLevel.error, "ModBE",
+                      "Block.hasState: Client not supported for this method.")
 
     def getState(self, stateType):
-        if self.hasState(stateType):
-            return self._states[stateType]
+        """
+        仅服务端
+        """
+        if ModBE.isServer():
+            if self.hasState(stateType):
+                return self._states[stateType]
+            else:
+                ModBE.log(LogType.error, LogLevel.error, "ModBE",
+                          "Block.getState: Cannot find state '%s' in current Block.", stateType)
+            return None
         else:
-            ModBE.log(LogType.error, LogLevel.error, "ModBE", "Block.getState: Cannot find state '%s' in current Block.", stateType)
-        return None
+            ModBE.log(LogType.error, LogLevel.error, "ModBE",
+                      "Block.getState: Client not supported for this method.")
+
+
+class Item(object):
+    if ModBE.isServer():
+        _item = _factory.CreateItem(Level.getLevelId())
+        _blockInfo = _factory.CreateBlockInfo(Level.getLevelId())
+    if ModBE.isClient():
+        _item = _factory.CreateItem(Level.getLevelId())
+
+    def __init__(self, fullName):
+        self._fullName = fullName
+        if ModBE.isServer():
+            pass
+        if ModBE.isClient():
+            pass
+
+    def _getItemBasicDict(self):
+        return self._item.GetItemBasicInfo(self._fullName)
+
+    def _getBlockBasicDict(self):
+        """
+        仅服务端
+        """
+        if ModBE.isServer():
+            return self._blockInfo.GetBlockBasicInfo(self._fullName)
+        else:
+            ModBE.log(LogType.error, LogLevel.error, "ModBE", "Item._getBlockBasicDict: Client not supported for this method.")
+
+    def isBlock(self):
+        """
+        仅服务端
+        """
+        if ModBE.isServer():
+            return self._getBlockBasicDict() is not None
+        else:
+            ModBE.log(LogType.error, LogLevel.error, "ModBE", "Item.isBlock: Client not supported for this method.")
+
+    def getItemIdentifier(self):
+        return self._fullName
+
+    def getAttackDamage(self):
+        return self._getItemBasicDict()["weaponDamage"]
+
+    def getMaxDamage(self):
+        return self._getItemBasicDict()["maxDurability"]
+
+    def getCreativeCategory(self):
+        categoryFromString = {
+            "all": CreativeCategory.All,
+            "construction": CreativeCategory.Construction,
+            "nature": CreativeCategory.Nature,
+            "equipment": CreativeCategory.Equipment,
+            "items": CreativeCategory.Items,
+            "commands": CreativeCategory.Commands,
+            "none": CreativeCategory.Count,
+            "custom": CreativeCategory.Custom
+        }
+        return categoryFromString[self._getItemBasicDict()["itemCategory"]]
+
+    def getTierLevel(self):
+        return self._getItemBasicDict()["itemTierLevel"]
+
+    def getArmorValue(self):
+        return self._getItemBasicDict()["armorDefense"]
+
+
+class ItemStack(object):
+
+    def __init__(self, fullName, count=1, aux=0, _userData=None):
+        self._item = Item(fullName)
+        self._aux = aux
+        self._count = count
+        self._userData = _userData
+        if ModBE.isServer():
+            self._block = self._item.isBlock() and Block(fullName, aux) or None
+        if ModBE.isClient():
+            pass
+
+    @staticmethod
+    def fromDict(itemDict):
+        identifier = itemDict["newItemName"]
+        aux = itemDict["newAuxValue"]
+        count = itemDict["count"]
+        _userData = "userData" in itemDict and itemDict["userData"] or None
+        return ItemStack(identifier, count, aux, _userData)
+
+
 
 
 # Interfaces #

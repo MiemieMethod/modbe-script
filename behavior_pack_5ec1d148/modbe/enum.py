@@ -24,3 +24,8 @@ class LogLevel:
         mapping = ["Verbose", "Inform", "Warning", "Error"]
         return mapping[level]
 
+
+class CreativeCategory(ItemCategory):
+    All = 0
+    Commands = 5
+    Count = 6

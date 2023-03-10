@@ -19,8 +19,8 @@ def onAddEntityServerEvent(args):
 
 def onServerItemTryUseEvent(args):
     entity = Actor(args["playerId"])
-    # itemStack = ItemStack(args["itemDict"])
-    # Callback.invoke(Callback._getCallbackNameByEngineEvent("ServerItemTryUseEvent"), entity, args["itemName"], args["auxValue"], itemStack)
+    itemStack = ItemStack.fromDict(args["itemDict"])
+    Callback.invoke(Callback._getCallbackNameByEngineEvent("ServerItemTryUseEvent"), entity, args["itemName"], args["auxValue"], itemStack)
     ModBE.log(LogType.debug, LogLevel.verbose, "ModBE", "onServerItemTryUseEvent: '%s'.", args)
 
 
