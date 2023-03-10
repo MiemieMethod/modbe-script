@@ -13,4 +13,4 @@ def onClientItemTryUseEvent(args):
 
 def onClientItemUseEvent(args):
     ModBE.log(LogType.debug, LogLevel.verbose, "ModBE", "onClientItemUseEvent: '%s'.", args)
-    ModBE.preventDefault()
+

@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from typing import Any, List
 
 import mod.server.extraServerApi as extraServerApi
 import mod.client.extraClientApi as extraClientApi
@@ -8,20 +7,10 @@ from mod_log import logger
 
 from modbe.enum import *
 
-__all__ = ["Level", "ModBE", "Callback", "Actor", "Player", "Block", "Item", "ItemStack", "Pos", "Tag", "EndTag", "ByteTag", "ShortTag", "IntTag", "LongTag", "FloatTag", "DoubleTag", "ByteArrayTag", "StringTag", "ListTag", "CompoundTag", "IntArrayTag"]
+__all__ = ["Level", "ModBE", "Callback", "Dimension", "LevelChunk", "Actor", "Player", "Block", "Item", "ItemStack", "Pos", "BlockPos", "ChunkPos", "Tag", "EndTag", "ByteTag", "ShortTag", "IntTag", "LongTag", "FloatTag", "DoubleTag", "ByteArrayTag", "StringTag", "ListTag", "CompoundTag", "IntArrayTag"]
 
 
 # Modules #
-
-class Level(object):
-
-    @staticmethod
-    def getLevelId():
-        if ModBE.isServer():
-            return extraServerApi.GetLevelId()
-        if ModBE.isClient():
-            return extraClientApi.GetLevelId()
-
 
 class ModBE(object):
 
@@ -58,20 +47,47 @@ class ModBE(object):
 
 if ModBE.isServer():
     _factory = extraServerApi.GetEngineCompFactory()
+    _game = _factory.CreateGame(extraServerApi.GetLevelId())
 if ModBE.isClient():
     _factory = extraClientApi.GetEngineCompFactory()
+    _game = _factory.CreateGame(extraClientApi.GetLevelId())
+
+
+class Level(object):
+
+    @staticmethod
+    def getLevelId():
+        if ModBE.isServer():
+            return extraServerApi.GetLevelId()
+        if ModBE.isClient():
+            return extraClientApi.GetLevelId()
+
+    @staticmethod
+    def getLocalDimension():
+        """
+        仅客户端
+        """
+        if ModBE.isClient():
+            return Dimension(_game.GetCurrentDimension())
+        else:
+            ModBE.log(LogType.error, LogLevel.error, "ModBE",
+                      "Level.getLocalDimension: Server not supported for this method.")
 
 
 class Callback(object):
     _serverCallbacks = {
-        "entityAdd": "AddEntityServerEvent",  # (entity, entityType, pos, dimension, isBaby, itemName, auxValue) # type: (Actor, str, Pos, int, bool, str, int) -> None
+        "entityAdd": "AddEntityServerEvent",
+        # (entity, entityType, pos, dimension, isBaby, itemName, auxValue) # type: (Actor, str, Pos, int, bool, str, int) -> None
         "itemUse": "ServerItemUseEvent",  # (entity, oldName, oldAux) # type: (Actor, str, int) -> None
-        "itemTryUse": "ServerItemTryUseEvent"  # (entity, oldName, oldAux, itemStack) # type: (Actor, str, int, ItemStack) -> None
+        "itemTryUse": "ServerItemTryUseEvent"
+        # (entity, oldName, oldAux, itemStack) # type: (Actor, str, int, ItemStack) -> None
     }
     _serverRegistered = {}
     _clientCallbacks = {
-        "itemUse": "ClientItemUseEvent",  # (entity, oldName, oldAux, itemStack) # type: (Actor, str, int, ItemStack) -> None
-        "itemTryUse": "ClientItemTryUseEvent"  # (entity, oldName, oldAux, itemStack) # type: (Actor, str, int, ItemStack) -> None
+        "itemUse": "ClientItemUseEvent",
+        # (entity, oldName, oldAux, itemStack) # type: (Actor, str, int, ItemStack) -> None
+        "itemTryUse": "ClientItemTryUseEvent"
+        # (entity, oldName, oldAux, itemStack) # type: (Actor, str, int, ItemStack) -> None
     }
     _clientRegistered = {}
 
@@ -115,11 +131,137 @@ class Callback(object):
                 return key
 
 
+class Dimension(object):
+    if ModBE.isServer():
+        _blockInfo = _factory.CreateBlockInfo(Level.getLevelId())
+    if ModBE.isClient():
+        _blockInfo = _factory.CreateBlockInfo(Level.getLevelId())
+
+    def __init__(self, typeId):
+        self._id = typeId
+
+    def __eq__(self, other):
+        if not isinstance(other, Dimension):
+            return NotImplemented
+        return self.getId() == other.getId()
+
+    def __ne__(self, other):
+        if not isinstance(other, Dimension):
+            return NotImplemented
+        return self.getId() != other.getId()
+
+    def getId(self):
+        return self._id
+
+    def getBlock(self, blockPos):
+        # type: (BlockPos) -> Block
+        blockPos = blockPos.toBlockPos()
+        if ModBE.isServer():
+            block = self._blockInfo.GetBlockNew(blockPos.toTuple(), self.getId())
+            return block is not None and Block.fromDict(block) or block
+        if ModBE.isClient():
+            if Level.getLocalDimension() == self:
+                block = self._blockInfo.GetBlock(blockPos.toTuple())
+                return block is not None and Block(block[0], block[1]) or block
+            ModBE.log(LogType.error, LogLevel.error, "ModBE",
+                      "Dimension.getBlock: Local player is not currently in this Dimension: %s.", self.getId())
+        return None
+
+    def getLiquidBlock(self, blockPos):
+        # type: (BlockPos) -> Block
+        """
+        仅服务端
+        """
+        blockPos = blockPos.toBlockPos()
+        if ModBE.isServer():
+            block = self._blockInfo.GetLiquidBlock(blockPos.toTuple(), self.getId())
+            return block is not None and Block.fromDict(block) or block
+        if ModBE.isClient():
+            ModBE.log(LogType.error, LogLevel.error, "ModBE",
+                      "Dimension.getLiquidBlock: Client not supported for this method.")
+        return None
+
+    def getExtraBlock(self, blockPos):
+        # type: (BlockPos) -> Block
+        """
+        仅服务端
+        """
+        blockPos = blockPos.toBlockPos()
+        if ModBE.isServer():
+            block = self.getBlock(blockPos)
+            liquid = self.getLiquidBlock(blockPos)
+            if liquid.getBlockIdentifier() != block.getBlockIdentifier():
+                return liquid
+        if ModBE.isClient():
+            ModBE.log(LogType.error, LogLevel.error, "ModBE",
+                      "Dimension.getLiquidBlock: Client not supported for this method.")
+        return None
+
+    def getChunk(self, pos):
+        # type: (ChunkPos) -> LevelChunk
+        return LevelChunk(self, pos)
+
+
+class LevelChunk(object):
+
+    def __init__(self, dim, pos):
+        # type: (Dimension, ChunkPos) -> None
+        self._dimension = dim
+        self._pos = pos
+
+    def __eq__(self, other):
+        if not isinstance(other, LevelChunk):
+            return NotImplemented
+        return self.getDimension() == other.getDimension() and self.getPosition() == other.getPosition()
+
+    def __ne__(self, other):
+        if not isinstance(other, LevelChunk):
+            return NotImplemented
+        return self.getDimension() != other.getDimension() or self.getPosition() != other.getPosition()
+
+    def getDimension(self):
+        return self._dimension
+
+    def getPosition(self):
+        return self._pos
+
+    def getBlock(self, relativePos):
+        # type: (BlockPos) -> Block
+        relativePos = relativePos.toBlockPos()
+        return self.getDimension().getBlock(self.getPosition().toBlockPos(relativePos))
+
+    def getLiquidBlock(self, relativePos):
+        # type: (BlockPos) -> Block
+        """
+        仅服务端
+        """
+        relativePos = relativePos.toBlockPos()
+        if ModBE.isServer():
+            return self.getDimension().getLiquidBlock(self.getPosition().toBlockPos(relativePos))
+        if ModBE.isClient():
+            ModBE.log(LogType.error, LogLevel.error, "ModBE",
+                      "LevelChunk.getLiquidBlock: Client not supported for this method.")
+        return None
+
+    def getExtraBlock(self, relativePos):
+        # type: (BlockPos) -> Block
+        """
+        仅服务端
+        """
+        relativePos = relativePos.toBlockPos()
+        if ModBE.isServer():
+            return self.getDimension().getExtraBlock(self.getPosition().toBlockPos(relativePos))
+        if ModBE.isClient():
+            ModBE.log(LogType.error, LogLevel.error, "ModBE",
+                      "LevelChunk.getExtraBlock: Client not supported for this method.")
+        return None
+
+
 class Actor(object):
     if ModBE.isServer():
-        _game = _factory.CreateGame(Level.getLevelId())
+        pass
     if ModBE.isClient():
-        _game = _factory.CreateGame(Level.getLevelId())
+        pass
 
     def __new__(cls, uniqueID):
         _identifier = "minecraft:unknown"
@@ -140,9 +282,26 @@ class Actor(object):
             self._type = _factory.CreateEngineType(self._uniqueID)
             self._dimension = _factory.CreateDimension(self._uniqueID)
             self._item = _factory.CreateItem(self._uniqueID)
+            self._pos = _factory.CreatePos(self._uniqueID)
         if ModBE.isClient():
             self._type = _factory.CreateEngineType(self._uniqueID)
+            self._pos = _factory.CreatePos(self._uniqueID)
         ModBE.log(LogType.debug, LogLevel.verbose, "ModBE", "Actor: '%s' initialized.", uniqueID)
+
+    def __eq__(self, other):
+        if isinstance(other, Actor):
+            return self.getUniqueID() == other.getUniqueID()
+        elif isinstance(other, int):
+            return int(self.getUniqueID()) == other
+        elif isinstance(other, str):
+            return self.getUniqueID() == other
+        else:
+            return NotImplemented
+
+    def __ne__(self, other):
+        if not isinstance(other, Actor) or not isinstance(other, int) or not isinstance(other, str):
+            return NotImplemented
+        return not self.__eq__(other)
 
     def getUniqueID(self):
         if not self.isAlive():
@@ -167,12 +326,7 @@ class Actor(object):
         return False
 
     def isAlive(self):
-        game = None
-        if self._game:
-            return self._game.IsEntityAlive(self._uniqueID)
-        else:
-            ModBE.log(LogType.error, LogLevel.error, "ModBE", "Actor.isAlive: Cannot get Level.")
-            return False
+        return _game.IsEntityAlive(self._uniqueID)
 
     def despawn(self):
         """
@@ -183,7 +337,8 @@ class Actor(object):
                 server = extraServerApi.GetSystem("ModBE", "Server")
                 server.DestroyEntity(self._uniqueID)
             else:
-                ModBE.log(LogType.error, LogLevel.error, "ModBE", "Actor.despawn: Client not supported for this method.")
+                ModBE.log(LogType.error, LogLevel.error, "ModBE",
+                          "Actor.despawn: Client not supported for this method.")
         else:
             ModBE.log(LogType.error, LogLevel.error, "ModBE", "Actor.despawn: Actor is not alive.")
 
@@ -193,7 +348,7 @@ class Actor(object):
         """
         if self.isAlive():
             if ModBE.isServer():
-                self._game.KillEntity(self._uniqueID)
+                _game.KillEntity(self._uniqueID)
             else:
                 ModBE.log(LogType.error, LogLevel.error, "ModBE", "Actor.kill: Client not supported for this method.")
         else:
@@ -207,7 +362,22 @@ class Actor(object):
             if ModBE.isServer():
                 return self._dimension.GetEntityDimensionId()
             else:
-                ModBE.log(LogType.error, LogLevel.error, "ModBE", "Actor.getDimensionId: Client not supported for this method.")
+                ModBE.log(LogType.error, LogLevel.error, "ModBE",
+                          "Actor.getDimensionId: Client not supported for this method.")
+        else:
+            ModBE.log(LogType.error, LogLevel.error, "ModBE", "Actor.getDimensionId: Actor is not alive.")
+        return 0
+
+    def getDimension(self):
+        """
+        仅服务端
+        """
+        if self.isAlive():
+            if ModBE.isServer():
+                return Dimension(self._dimension.GetEntityDimensionId())
+            else:
+                ModBE.log(LogType.error, LogLevel.error, "ModBE",
+                          "Actor.getDimensionId: Client not supported for this method.")
         else:
             ModBE.log(LogType.error, LogLevel.error, "ModBE", "Actor.getDimensionId: Actor is not alive.")
         return 0
@@ -219,11 +389,24 @@ class Actor(object):
         if self.isAlive():
             if ModBE.isServer():
                 item_dict = self._item.GetEntityItem(ItemPosType.CARRIED, 0, True)
-                # item =
+                return ItemStack.fromDict(item_dict)
             else:
-                ModBE.log(LogType.error, LogLevel.error, "ModBE", "Actor.getCarriedItem: Client not supported for this method.")
+                ModBE.log(LogType.error, LogLevel.error, "ModBE",
+                          "Actor.getCarriedItem: Client not supported for this method.")
         else:
             ModBE.log(LogType.error, LogLevel.error, "ModBE", "Actor.getCarriedItem: Actor is not alive.")
+
+    def getPos(self):
+        if self.isAlive():
+            return Pos.fromTuple(self._pos.GetPos())
+        else:
+            ModBE.log(LogType.error, LogLevel.error, "ModBE", "Actor.getPos: Actor is not alive.")
+
+    def getFeetPos(self):
+        if self.isAlive():
+            return Pos.fromTuple(self._pos.GetFootPos())
+        else:
+            ModBE.log(LogType.error, LogLevel.error, "ModBE", "Actor.getFeetPos: Actor is not alive.")
 
 
 class Player(Actor):
@@ -252,6 +435,16 @@ class Block(object):
                 "states", CompoundTag.fromDict(self._states))
         if ModBE.isClient():
             pass
+
+    def __eq__(self, other):
+        if not isinstance(other, Block):
+            return NotImplemented
+        return self.getBlockIdentifier() == other.getBlockIdentifier() and self.getData() == other.getData()
+
+    def __ne__(self, other):
+        if not isinstance(other, Block):
+            return NotImplemented
+        return self.getBlockIdentifier() != other.getBlockIdentifier() or self.getData() != other.getData()
 
     @staticmethod
     def fromDict(blockDict):
@@ -286,7 +479,8 @@ class Block(object):
         if ModBE.isServer():
             return self._info.GetBlockBasicInfo(self._fullName)
         else:
-            ModBE.log(LogType.error, LogLevel.error, "ModBE", "Block._getBlockBasicDict: Client not supported for this method.")
+            ModBE.log(LogType.error, LogLevel.error, "ModBE",
+                      "Block._getBlockBasicDict: Client not supported for this method.")
 
     def getBlockIdentifier(self):
         # type: () -> str
@@ -304,7 +498,8 @@ class Block(object):
         if ModBE.isServer():
             return self._getBlockBasicDict()["renderLayer"]
         else:
-            ModBE.log(LogType.error, LogLevel.error, "ModBE", "Block.getRenderLayer: Client not supported for this method.")
+            ModBE.log(LogType.error, LogLevel.error, "ModBE",
+                      "Block.getRenderLayer: Client not supported for this method.")
 
     def getDestroySpeed(self):
         # type: () -> float
@@ -314,7 +509,8 @@ class Block(object):
         if ModBE.isServer():
             return self._getBlockBasicDict()["destroyTime"]
         else:
-            ModBE.log(LogType.error, LogLevel.error, "ModBE", "Block.getDestroySpeed: Client not supported for this method.")
+            ModBE.log(LogType.error, LogLevel.error, "ModBE",
+                      "Block.getDestroySpeed: Client not supported for this method.")
 
     def getSolid(self):
         # type: () -> bool
@@ -334,7 +530,8 @@ class Block(object):
         if ModBE.isServer():
             return self._getBlockBasicDict()["explosionResistance"]
         else:
-            ModBE.log(LogType.error, LogLevel.error, "ModBE", "Block.getExplosionResistance: Client not supported for this method.")
+            ModBE.log(LogType.error, LogLevel.error, "ModBE",
+                      "Block.getExplosionResistance: Client not supported for this method.")
 
     def getLightEmission(self):
         # type: () -> int
@@ -344,7 +541,8 @@ class Block(object):
         if ModBE.isServer():
             return self._getBlockBasicDict()["blockLightEmission"]
         else:
-            ModBE.log(LogType.error, LogLevel.error, "ModBE", "Block.getLightEmission: Client not supported for this method.")
+            ModBE.log(LogType.error, LogLevel.error, "ModBE",
+                      "Block.getLightEmission: Client not supported for this method.")
 
     def getLight(self):
         # type: () -> int
@@ -364,7 +562,8 @@ class Block(object):
         if ModBE.isServer():
             return self._getBlockBasicDict()["mapColor"]
         else:
-            ModBE.log(LogType.error, LogLevel.error, "ModBE", "Block.getMapColor: Client not supported for this method.")
+            ModBE.log(LogType.error, LogLevel.error, "ModBE",
+                      "Block.getMapColor: Client not supported for this method.")
 
     def getCreativeCategory(self):
         # type: () -> int
@@ -374,7 +573,8 @@ class Block(object):
         if ModBE.isServer():
             return self._getBlockBasicDict()["creativeCategory"]
         else:
-            ModBE.log(LogType.error, LogLevel.error, "ModBE", "Block.getCreativeCategory: Client not supported for this method.")
+            ModBE.log(LogType.error, LogLevel.error, "ModBE",
+                      "Block.getCreativeCategory: Client not supported for this method.")
 
     def getStates(self):
         """
@@ -415,6 +615,16 @@ class Block(object):
 
 
 class Item(object):
+    categoryFromString = {
+        "all": CreativeCategory.All,
+        "construction": CreativeCategory.Construction,
+        "nature": CreativeCategory.Nature,
+        "equipment": CreativeCategory.Equipment,
+        "items": CreativeCategory.Items,
+        "commands": CreativeCategory.Commands,
+        "none": CreativeCategory.Count,
+        "custom": CreativeCategory.Custom
+    }
     if ModBE.isServer():
         _item = _factory.CreateItem(Level.getLevelId())
         _blockInfo = _factory.CreateBlockInfo(Level.getLevelId())
@@ -428,6 +638,19 @@ class Item(object):
         if ModBE.isClient():
             pass
 
+    def __eq__(self, other):
+        if isinstance(other, Item):
+            return self.getItemIdentifier() == other.getItemIdentifier()
+        elif isinstance(other, str):
+            return self.getItemIdentifier() == other
+        else:
+            return NotImplemented
+
+    def __ne__(self, other):
+        if not isinstance(other, Actor) or not isinstance(other, str):
+            return NotImplemented
+        return not self.__eq__(other)
+
     def _getItemBasicDict(self):
         return self._item.GetItemBasicInfo(self._fullName)
 
@@ -438,7 +661,8 @@ class Item(object):
         if ModBE.isServer():
             return self._blockInfo.GetBlockBasicInfo(self._fullName)
         else:
-            ModBE.log(LogType.error, LogLevel.error, "ModBE", "Item._getBlockBasicDict: Client not supported for this method.")
+            ModBE.log(LogType.error, LogLevel.error, "ModBE",
+                      "Item._getBlockBasicDict: Client not supported for this method.")
 
     def isBlock(self):
         """
@@ -459,17 +683,7 @@ class Item(object):
         return self._getItemBasicDict()["maxDurability"]
 
     def getCreativeCategory(self):
-        categoryFromString = {
-            "all": CreativeCategory.All,
-            "construction": CreativeCategory.Construction,
-            "nature": CreativeCategory.Nature,
-            "equipment": CreativeCategory.Equipment,
-            "items": CreativeCategory.Items,
-            "commands": CreativeCategory.Commands,
-            "none": CreativeCategory.Count,
-            "custom": CreativeCategory.Custom
-        }
-        return categoryFromString[self._getItemBasicDict()["itemCategory"]]
+        return self.categoryFromString[self._getItemBasicDict()["itemCategory"]]
 
     def getTierLevel(self):
         return self._getItemBasicDict()["itemTierLevel"]
@@ -495,6 +709,16 @@ class ItemStack(object):
         if ModBE.isClient():
             pass
 
+    def __eq__(self, other):
+        if not isinstance(other, ItemStack):
+            return NotImplemented
+        return self.getItem() == other.getItem() and self.get() == other.get() and self.getAuxValue() == other.getAuxValue() and self.getUserData() == other.getUserData()
+
+    def __ne__(self, other):
+        if not isinstance(other, ItemStack):
+            return NotImplemented
+        return self.getItem() != other.getItem() or self.get() != other.get() or self.getAuxValue() != other.getAuxValue() or self.getUserData() != other.getUserData()
+
     @staticmethod
     def fromDict(itemDict):
         identifier = itemDict["newItemName"]
@@ -516,7 +740,8 @@ class ItemStack(object):
         if ModBE.isServer():
             return self.getItem().isBlock()
         else:
-            ModBE.log(LogType.error, LogLevel.error, "ModBE", "ItemStack.isBlock: Client not supported for this method.")
+            ModBE.log(LogType.error, LogLevel.error, "ModBE",
+                      "ItemStack.isBlock: Client not supported for this method.")
 
     def getBlock(self):
         if hasattr(self, "_block"):
@@ -538,6 +763,9 @@ class ItemStack(object):
 
     def remove(self, removeCount):
         self.set(self.get() - removeCount)
+
+    def increase(self):
+        self.add(1)
 
     def decrease(self):
         self.remove(1)
@@ -564,17 +792,7 @@ class ItemStack(object):
         return self._getItemBasicDict()["maxDurability"]
 
     def getCreativeCategory(self):
-        categoryFromString = {
-            "all": CreativeCategory.All,
-            "construction": CreativeCategory.Construction,
-            "nature": CreativeCategory.Nature,
-            "equipment": CreativeCategory.Equipment,
-            "items": CreativeCategory.Items,
-            "commands": CreativeCategory.Commands,
-            "none": CreativeCategory.Count,
-            "custom": CreativeCategory.Custom
-        }
-        return categoryFromString[self._getItemBasicDict()["itemCategory"]]
+        return Item.categoryFromString[self._getItemBasicDict()["itemCategory"]]
 
     def getTierLevel(self):
         return self._getItemBasicDict()["itemTierLevel"]
@@ -589,11 +807,10 @@ class ItemStack(object):
         return self.getUserData().getInt("Damage")
 
     def isFullStack(self):
-        return self.getCount() >= self.getMaxStackSize()
+        return self.get() >= self.getMaxStackSize()
 
     def isEmptyStack(self):
-        return self.getCount() <= 0
-
+        return self.get() <= 0
 
 
 # Interfaces #
@@ -601,10 +818,39 @@ class ItemStack(object):
 
 class Pos(object):
 
-    def __init__(self, x, y, z):
-        self.x = x or 0
-        self.y = y or 0
-        self.z = z or 0
+    def __init__(self, x=0.0, y=0.0, z=0.0):
+        self.x = x
+        self.y = y
+        self.z = z
+
+    def __add__(self, other):
+        if not isinstance(other, Pos):
+            return NotImplemented
+        return Pos(self.getX() + other.getX(), self.getY() + other.getY(), self.getZ() + other.getZ())
+
+    def __sub__(self, other):
+        if not isinstance(other, Pos):
+            return NotImplemented
+        return Pos(self.getX() - other.getX(), self.getY() - other.getY(), self.getZ() - other.getZ())
+
+    def __mul__(self, other):
+        if not isinstance(other, Pos):
+            return NotImplemented
+        return self.getX() * other.getX() + self.getY() * other.getY() + self.getZ() * other.getZ()
+
+    def __eq__(self, other):
+        if not isinstance(other, Pos):
+            return NotImplemented
+        return self.getX() == other.getX() and self.getY() == other.getY() and self.getZ() == other.getZ()
+
+    def __ne__(self, other):
+        if not isinstance(other, Pos):
+            return NotImplemented
+        return self.getX() != other.getX() or self.getY() != other.getY() or self.getZ() != other.getZ()
+
+    @staticmethod
+    def fromTuple(_tuple):
+        return Pos(_tuple[0], _tuple[1], _tuple[2])
 
     def getX(self):
         return self.x
@@ -615,8 +861,90 @@ class Pos(object):
     def getZ(self):
         return self.z
 
+    def toTuple(self):
+        return self.x, self.y, self.z
+
+    def toBlockPos(self):
+        if isinstance(self, Pos) and not isinstance(self, BlockPos):
+            return BlockPos(int(self.x), int(self.y), int(self.z))
+        return self
+
     def clone(self):
         return Pos(self.x, self.y, self.z)
+
+
+class BlockPos(Pos):
+
+    def __init__(self, x=0, y=0, z=0):
+        object.__init__(self)
+        self.x = int(x)
+        self.y = int(y)
+        self.z = int(z)
+
+    @staticmethod
+    def fromTuple(_tuple):
+        return BlockPos(_tuple[0], _tuple[1], _tuple[2])
+
+    def addAndSet(self, other):
+        self.x += other.getX()
+        self.y += other.getY()
+        self.z += other.getZ()
+        return self
+
+    def neighbor(self, facing):
+        facingDirection = [
+            BlockPos(0, -1, 0),
+            BlockPos(0, 1, 0),
+            BlockPos(0, 0, -1),
+            BlockPos(0, 0, 1),
+            BlockPos(-1, 0, 0),
+            BlockPos(1, 0, 0)
+        ]
+        return self + facingDirection[facing]
+
+    def toChunkPos(self):
+        return ChunkPos(self.getX() >> 4, self.getZ() >> 4)
+
+
+class ChunkPos(object):
+
+    def __init__(self, x=0, z=0):
+        self.x = int(x)
+        self.z = int(z)
+
+    def __add__(self, other):
+        if not isinstance(other, Pos):
+            return NotImplemented
+        return Pos(self.getX() + other.getX(), self.getZ() + other.getZ())
+
+    def __sub__(self, other):
+        if not isinstance(other, Pos):
+            return NotImplemented
+        return Pos(self.getX() - other.getX(), self.getZ() - other.getZ())
+
+    def __eq__(self, other):
+        if not isinstance(other, Pos):
+            return NotImplemented
+        return self.getX() == other.getX() and self.getZ() == other.getZ()
+
+    def __ne__(self, other):
+        if not isinstance(other, Pos):
+            return NotImplemented
+        return self.getX() != other.getX() or self.getZ() != other.getZ()
+
+    def getX(self):
+        return self.x
+
+    def getZ(self):
+        return self.z
+
+    def toBlockPos(self, relativePos=BlockPos()):
+        relativePos = relativePos.toBlockPos()
+        return BlockPos(self.getX() << 4 + relativePos.getX(), relativePos.getY(),
+                        self.getZ() << 4 + relativePos.getZ())
+
+    def clone(self):
+        return Pos(self.x, self.z)
 
 
 class Tag(object):
@@ -650,8 +978,8 @@ class Tag(object):
     def get(self, *args):
         return self._data
 
-    def put(self, data):
-        self._data = data
+    def put(self, *args):
+        self._data = args[0]
         return self
 
     def getId(self):
@@ -669,6 +997,20 @@ class EndTag(Tag):
     def __init__(self):
         Tag.__init__(self, TagType.End)
 
+    def __eq__(self, other):
+        if not isinstance(other, Tag):
+            return NotImplemented
+        if not isinstance(other, EndTag):
+            return False
+        return True
+
+    def __ne__(self, other):
+        if not isinstance(other, Tag):
+            return NotImplemented
+        if not isinstance(other, EndTag):
+            return False
+        return True
+
     def clone(self):
         return EndTag()
 
@@ -681,6 +1023,20 @@ class ByteTag(Tag):
     def __init__(self, data=0):
         Tag.__init__(self, TagType.Byte)
         self._data = data
+
+    def __eq__(self, other):
+        if not isinstance(other, Tag):
+            return NotImplemented
+        if not isinstance(other, ByteTag):
+            return False
+        return self.get() == other.get()
+
+    def __ne__(self, other):
+        if not isinstance(other, Tag):
+            return NotImplemented
+        if not isinstance(other, ByteTag):
+            return False
+        return self.get() != other.get()
 
     def clone(self):
         return ByteTag(self._data)
@@ -695,6 +1051,20 @@ class ShortTag(Tag):
         Tag.__init__(self, TagType.Short)
         self._data = data
 
+    def __eq__(self, other):
+        if not isinstance(other, Tag):
+            return NotImplemented
+        if not isinstance(other, ShortTag):
+            return False
+        return self.get() == other.get()
+
+    def __ne__(self, other):
+        if not isinstance(other, Tag):
+            return NotImplemented
+        if not isinstance(other, ShortTag):
+            return False
+        return self.get() != other.get()
+
     def clone(self):
         return ShortTag(self._data)
 
@@ -707,6 +1077,20 @@ class IntTag(Tag):
     def __init__(self, data=0):
         Tag.__init__(self, TagType.Int)
         self._data = data
+
+    def __eq__(self, other):
+        if not isinstance(other, Tag):
+            return NotImplemented
+        if not isinstance(other, IntTag):
+            return False
+        return self.get() == other.get()
+
+    def __ne__(self, other):
+        if not isinstance(other, Tag):
+            return NotImplemented
+        if not isinstance(other, IntTag):
+            return False
+        return self.get() != other.get()
 
     def clone(self):
         return IntTag(self._data)
@@ -721,6 +1105,20 @@ class LongTag(Tag):
         Tag.__init__(self, TagType.Int64)
         self._data = data
 
+    def __eq__(self, other):
+        if not isinstance(other, Tag):
+            return NotImplemented
+        if not isinstance(other, LongTag):
+            return False
+        return self.get() == other.get()
+
+    def __ne__(self, other):
+        if not isinstance(other, Tag):
+            return NotImplemented
+        if not isinstance(other, LongTag):
+            return False
+        return self.get() != other.get()
+
     def clone(self):
         return LongTag(self._data)
 
@@ -733,6 +1131,20 @@ class FloatTag(Tag):
     def __init__(self, data=0.0):
         Tag.__init__(self, TagType.Float)
         self._data = data
+
+    def __eq__(self, other):
+        if not isinstance(other, Tag):
+            return NotImplemented
+        if not isinstance(other, FloatTag):
+            return False
+        return self.get() == other.get()
+
+    def __ne__(self, other):
+        if not isinstance(other, Tag):
+            return NotImplemented
+        if not isinstance(other, FloatTag):
+            return False
+        return self.get() != other.get()
 
     def clone(self):
         return FloatTag(self._data)
@@ -747,18 +1159,50 @@ class DoubleTag(Tag):
         Tag.__init__(self, TagType.Double)
         self._data = data
 
+    def __eq__(self, other):
+        if not isinstance(other, Tag):
+            return NotImplemented
+        if not isinstance(other, DoubleTag):
+            return False
+        return self.get() == other.get()
+
+    def __ne__(self, other):
+        if not isinstance(other, Tag):
+            return NotImplemented
+        if not isinstance(other, DoubleTag):
+            return False
+        return self.get() != other.get()
+
     def clone(self):
         return DoubleTag(self._data)
 
 
 class ByteArrayTag(Tag):
 
-    def __new__(cls, data=[]):
+    def __new__(cls, data=None):
+        if data is None:
+            data = []
         return object.__new__(cls, data)
 
-    def __init__(self, data=[]):
+    def __init__(self, data=None):
         Tag.__init__(self, TagType.ByteArray)
+        if data is None:
+            data = []
         self._data = data
+
+    def __eq__(self, other):
+        if not isinstance(other, Tag):
+            return NotImplemented
+        if not isinstance(other, ByteArrayTag):
+            return False
+        return self.get() == other.get()
+
+    def __ne__(self, other):
+        if not isinstance(other, Tag):
+            return NotImplemented
+        if not isinstance(other, ByteArrayTag):
+            return False
+        return self.get() != other.get()
 
     def clone(self):
         return ByteArrayTag(self._data)
@@ -772,6 +1216,20 @@ class StringTag(Tag):
     def __init__(self, data=""):
         Tag.__init__(self, TagType.String)
         self._data = data
+
+    def __eq__(self, other):
+        if not isinstance(other, Tag):
+            return NotImplemented
+        if not isinstance(other, StringTag):
+            return False
+        return self.get() == other.get()
+
+    def __ne__(self, other):
+        if not isinstance(other, Tag):
+            return NotImplemented
+        if not isinstance(other, StringTag):
+            return False
+        return self.get() != other.get()
 
     def clone(self):
         return StringTag(self._data)
@@ -790,6 +1248,23 @@ class ListTag(Tag):
             tagList = []
         self._list = tagList
         self._listType = self.size() > 0 and self.get(0).getId() or TagType.End
+
+    def __eq__(self, other):
+        if not isinstance(other, Tag):
+            return NotImplemented
+        if not isinstance(other, ListTag):
+            return False
+        if self.size() == other.size():
+            for i in range(0, self.size() - 1):
+                if self.get(i) != other.get(i):
+                    return False
+            return True
+        return False
+
+    def __ne__(self, other):
+        if not isinstance(other, Tag):
+            return NotImplemented
+        return not self.__eq__(other)
 
     @staticmethod
     def fromList(rawList, _list=None):
@@ -843,7 +1318,6 @@ class ListTag(Tag):
                               "ListTag.fromObject: Unsupported Type: '%s' added to a ListTag.", element)
             return _list
 
-
     def size(self):
         return len(self._list)
 
@@ -879,6 +1353,23 @@ class CompoundTag(Tag):
             tagDict = {}
         self._tags = tagDict
 
+    def __eq__(self, other):
+        if not isinstance(other, Tag):
+            return NotImplemented
+        if not isinstance(other, CompoundTag):
+            return False
+        for key in self.getTags():
+            if not other.contains(key):
+                return False
+            if self.get(key) != other.get(key):
+                return False
+        return True
+
+    def __ne__(self, other):
+        if not isinstance(other, Tag):
+            return NotImplemented
+        return not self.__eq__(other)
+
     @staticmethod
     def fromDict(rawDict, _compound=None):
         """
@@ -904,7 +1395,7 @@ class CompoundTag(Tag):
                 else:
                     _compound.putList(key, ListTag.fromList(value))
             elif isinstance(value, dict):
-                _compound.putCompound(CompoundTag.fromDict(value))
+                _compound.putCompound(key, CompoundTag.fromDict(value))
             else:
                 ModBE.log(LogType.error, LogLevel.error, "ModBE",
                           "CompoundTag.fromDict: Unsupported Type: '%s' added to a CompoundTag key: '%s'.", value, key)
@@ -928,7 +1419,8 @@ class CompoundTag(Tag):
                     _compound.putCompound(key, CompoundTag.fromObject(value))
             else:
                 ModBE.log(LogType.error, LogLevel.error, "ModBE",
-                          "CompoundTag.fromObject: Unsupported Type: '%s' added to a CompoundTag key: '%s'.", value, key)
+                          "CompoundTag.fromObject: Unsupported Type: '%s' added to a CompoundTag key: '%s'.", value,
+                          key)
         return _compound
 
     def remove(self, name):
@@ -950,6 +1442,10 @@ class CompoundTag(Tag):
         if self.contains(name):
             return self._tags[name]
         return None
+
+    def getTags(self):
+        # type: () -> dict
+        return self._tags
 
     def getBoolean(self, name):
         # type: (str) -> int
@@ -1157,12 +1653,30 @@ class CompoundTag(Tag):
 
 class IntArrayTag(Tag):
 
-    def __new__(cls, data=[]):
+    def __new__(cls, data=None):
+        if data is None:
+            data = []
         return object.__new__(cls, data)
 
-    def __init__(self, data=[]):
+    def __init__(self, data=None):
         Tag.__init__(self, TagType.IntArray)
+        if data is None:
+            data = []
         self._data = data
+
+    def __eq__(self, other):
+        if not isinstance(other, Tag):
+            return NotImplemented
+        if not isinstance(other, IntArrayTag):
+            return False
+        return self.get() == other.get()
+
+    def __ne__(self, other):
+        if not isinstance(other, Tag):
+            return NotImplemented
+        if not isinstance(other, IntArrayTag):
+            return False
+        return self.get() != other.get()
 
     def clone(self):
         return IntArrayTag(self._data)

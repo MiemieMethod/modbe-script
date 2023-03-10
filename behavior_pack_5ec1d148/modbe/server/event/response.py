@@ -9,8 +9,9 @@ from modbe.enum import *
 
 def onAddEntityServerEvent(args):
     entity = Actor(args["id"])
-    pos = Pos(args["posX"], args["posY"], args["posZ"])
-    Callback.invoke(Callback._getCallbackNameByEngineEvent("AddEntityServerEvent"), entity, args["engineTypeStr"], pos, args["dimensionId"], args["isBaby"],
+    pos = BlockPos(args["posX"], args["posY"], args["posZ"])
+    dimension = Dimension(args["dimensionId"])
+    Callback.invoke(Callback._getCallbackNameByEngineEvent("AddEntityServerEvent"), entity, args["engineTypeStr"], pos, dimension, args["isBaby"],
                     "itemName" in args and args["itemName"] or "minecraft:air",
                     "auxValue" in args and args["auxValue"] or 0)
 
