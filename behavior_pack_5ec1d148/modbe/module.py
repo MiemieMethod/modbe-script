@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from typing import Any, List
 
 import mod.server.extraServerApi as extraServerApi
 import mod.client.extraClientApi as extraClientApi
@@ -247,7 +248,7 @@ class Block(object):
         self._data = aux
         if ModBE.isServer():
             self._states = Block.getStatesFromAux(self._fullName, self._data)
-            self._serializationId = CompoundTag().putString("name", self._fullName).putInt("version", 0).putCompound(
+            self._serializationId = CompoundTag().putString("name", self._fullName).putCompound(
                 "states", CompoundTag.fromDict(self._states))
         if ModBE.isClient():
             pass
@@ -478,12 +479,17 @@ class Item(object):
 
 
 class ItemStack(object):
+    TAG_ENCHANTS = "ench"
+    if ModBE.isServer():
+        _itemComp = _factory.CreateItem(Level.getLevelId())
+    if ModBE.isClient():
+        _itemComp = _factory.CreateItem(Level.getLevelId())
 
     def __init__(self, fullName, count=1, aux=0, _userData=None):
         self._item = Item(fullName)
         self._aux = aux
         self._count = count
-        self._userData = _userData
+        self._userData = CompoundTag.fromObject(_userData)
         if ModBE.isServer():
             self._block = self._item.isBlock() and Block(fullName, aux) or None
         if ModBE.isClient():
@@ -497,6 +503,96 @@ class ItemStack(object):
         _userData = "userData" in itemDict and itemDict["userData"] or None
         return ItemStack(identifier, count, aux, _userData)
 
+    def _getItemBasicDict(self):
+        return self._itemComp.GetItemBasicInfo(self.getItemIdentifier(), self.getAuxValue(), self.isEnchanted())
+
+    def getItem(self):
+        return self._item
+
+    def isBlock(self):
+        """
+        仅服务端
+        """
+        if ModBE.isServer():
+            return self.getItem().isBlock()
+        else:
+            ModBE.log(LogType.error, LogLevel.error, "ModBE", "ItemStack.isBlock: Client not supported for this method.")
+
+    def getBlock(self):
+        if hasattr(self, "_block"):
+            return self._block
+        return None
+
+    def get(self):
+        return self._count
+
+    def set(self, inCount):
+        if inCount <= self.getMaxStackSize():
+            self._count = inCount >= 0 and inCount or 0
+        else:
+            ModBE.log(LogType.error, LogLevel.error, "ModBE",
+                      "ItemStack.set: inCount > maxStackSize.")
+
+    def add(self, addCount):
+        self.set(self.get() + addCount)
+
+    def remove(self, removeCount):
+        self.set(self.get() - removeCount)
+
+    def decrease(self):
+        self.remove(1)
+
+    def getUserData(self):
+        return self._userData
+
+    def getItemIdentifier(self):
+        return self.getItem().getItemIdentifier()
+
+    def getAuxValue(self):
+        return self._aux
+
+    def isEnchanted(self):
+        return self.getUserData().contains(self.TAG_ENCHANTS)
+
+    def getIdAux(self):
+        return self._getItemBasicDict()["id_aux"]
+
+    def getAttackDamage(self):
+        return self._getItemBasicDict()["weaponDamage"]
+
+    def getMaxDamage(self):
+        return self._getItemBasicDict()["maxDurability"]
+
+    def getCreativeCategory(self):
+        categoryFromString = {
+            "all": CreativeCategory.All,
+            "construction": CreativeCategory.Construction,
+            "nature": CreativeCategory.Nature,
+            "equipment": CreativeCategory.Equipment,
+            "items": CreativeCategory.Items,
+            "commands": CreativeCategory.Commands,
+            "none": CreativeCategory.Count,
+            "custom": CreativeCategory.Custom
+        }
+        return categoryFromString[self._getItemBasicDict()["itemCategory"]]
+
+    def getTierLevel(self):
+        return self._getItemBasicDict()["itemTierLevel"]
+
+    def getArmorValue(self):
+        return self._getItemBasicDict()["armorDefense"]
+
+    def getMaxStackSize(self):
+        return self._getItemBasicDict()["maxStackSize"]
+
+    def getDamageValue(self):
+        return self.getUserData().getInt("Damage")
+
+    def isFullStack(self):
+        return self.getCount() >= self.getMaxStackSize()
+
+    def isEmptyStack(self):
+        return self.getCount() <= 0
 
 
 
@@ -683,21 +779,26 @@ class StringTag(Tag):
 
 class ListTag(Tag):
 
-    def __new__(cls, tagList=[]):
+    def __new__(cls, tagList=None):
+        if tagList is None:
+            tagList = []
         return object.__new__(cls, tagList)
 
-    def __init__(self, tagList=[]):
+    def __init__(self, tagList=None):
         Tag.__init__(self, TagType.List)
+        if tagList is None:
+            tagList = []
         self._list = tagList
         self._listType = self.size() > 0 and self.get(0).getId() or TagType.End
 
     @staticmethod
-    def fromList(rawList):
+    def fromList(rawList, _list=None):
         """
         Python限制，无法正确设置非布尔值形态的Byte、Short、Long、Double作为元素，请手动设置
         """
-        _list = ListTag()
-        if len(rawList) == 0:
+        if _list is None:
+            _list = ListTag()
+        if rawList is None or len(rawList) == 0:
             return _list
         else:
             for element in rawList:
@@ -720,6 +821,28 @@ class ListTag(Tag):
                     ModBE.log(LogType.error, LogLevel.error, "ModBE",
                               "ListTag.fromList: Unsupported Type: '%s' added to a ListTag.", element)
             return _list
+
+    @staticmethod
+    def fromObject(rawList, _list=None):
+        if _list is None:
+            _list = ListTag()
+        if rawList is None or len(rawList) == 0:
+            return _list
+        else:
+            for element in rawList:
+                if isinstance(element, list):
+                    _list.add(ListTag.fromObject(element))
+                elif isinstance(element, dict):
+                    if "__type__" in element:
+                        typeId = element["__type__"]
+                        _list.add(Tag._typeIdToClass(typeId)(element["__value__"]))
+                    else:
+                        _list.add(CompoundTag.fromObject(element))
+                else:
+                    ModBE.log(LogType.error, LogLevel.error, "ModBE",
+                              "ListTag.fromObject: Unsupported Type: '%s' added to a ListTag.", element)
+            return _list
+
 
     def size(self):
         return len(self._list)
@@ -745,42 +868,68 @@ class ListTag(Tag):
 
 class CompoundTag(Tag):
 
-    def __new__(cls, data={}):
+    def __new__(cls, data=None):
+        if data is None:
+            data = {}
         return object.__new__(cls, data)
 
-    def __init__(self, tagDict={}):
+    def __init__(self, tagDict=None):
         Tag.__init__(self, TagType.Compound)
+        if tagDict is None:
+            tagDict = {}
         self._tags = tagDict
 
     @staticmethod
-    def fromDict(rawDict):
+    def fromDict(rawDict, _compound=None):
         """
         Python限制，无法正确设置非布尔值形态的Byte、Short、Long、Double和IntArray，请手动设置
         """
-        compound = CompoundTag()
-        if len(rawDict) == 0:
-            return compound
+        if _compound is None:
+            _compound = CompoundTag()
+        if rawDict is None or len(rawDict) == 0:
+            return _compound
         for key in rawDict:
             value = rawDict[key]
             if isinstance(value, int):
-                compound.putInt(key, value)
+                _compound.putInt(key, value)
             elif isinstance(value, float):
-                compound.putFloat(key, value)
+                _compound.putFloat(key, value)
             elif isinstance(value, str):
-                compound.putString(key, value)
+                _compound.putString(key, value)
             elif isinstance(value, bool):
-                compound.putBoolean(key, value)
+                _compound.putBoolean(key, value)
             elif isinstance(value, list):
                 if len(value) > 0 and isinstance(value[0], int):
-                    compound.putByteArray(key, value)
+                    _compound.putByteArray(key, value)
                 else:
-                    compound.putList(key, ListTag.fromList(value))
+                    _compound.putList(key, ListTag.fromList(value))
             elif isinstance(value, dict):
-                compound.putCompound(CompoundTag.fromDict(value))
+                _compound.putCompound(CompoundTag.fromDict(value))
             else:
                 ModBE.log(LogType.error, LogLevel.error, "ModBE",
                           "CompoundTag.fromDict: Unsupported Type: '%s' added to a CompoundTag key: '%s'.", value, key)
-        return compound
+        return _compound
+
+    @staticmethod
+    def fromObject(rawObject, _compound=None):
+        if _compound is None:
+            _compound = CompoundTag()
+        if rawObject is None or len(rawObject) == 0:
+            return _compound
+        for key in rawObject:
+            value = rawObject[key]
+            if isinstance(value, list):
+                _compound.putList(key, ListTag.fromObject(value))
+            elif isinstance(value, dict):
+                if "__type__" in value:
+                    typeId = value["__type__"]
+                    _compound.put(key, Tag._typeIdToClass(typeId)(value["__value__"]))
+                else:
+                    _compound.putCompound(key, CompoundTag.fromObject(value))
+            else:
+                ModBE.log(LogType.error, LogLevel.error, "ModBE",
+                          "CompoundTag.fromObject: Unsupported Type: '%s' added to a CompoundTag key: '%s'.", value, key)
+        return _compound
 
     def remove(self, name):
         # type: (str) -> bool
@@ -803,55 +952,55 @@ class CompoundTag(Tag):
         return None
 
     def getBoolean(self, name):
-        # type: (str) -> ByteTag | None
+        # type: (str) -> int
         if self.contains(name, TagType.Byte):
             return self._tags[name].get()
-        return None
+        return False
 
     def getByte(self, name):
-        # type: (str) -> ByteTag | None
+        # type: (str) -> int
         if self.contains(name, TagType.Byte):
             return self._tags[name].get()
-        return None
+        return 0
 
     def getShort(self, name):
-        # type: (str) -> ShortTag | None
+        # type: (str) -> int
         if self.contains(name, TagType.Short):
             return self._tags[name].get()
-        return None
+        return 0
 
     def getInt(self, name):
-        # type: (str) -> IntTag | None
+        # type: (str) -> int
         if self.contains(name, TagType.Int):
             return self._tags[name].get()
-        return None
+        return 0
 
     def getLong(self, name):
-        # type: (str) -> LongTag | None
+        # type: (str) -> int
         if self.contains(name, TagType.Int64):
             return self._tags[name].get()
-        return None
+        return 0
 
     def getFloat(self, name):
-        # type: (str) -> FloatTag | None
+        # type: (str) -> float
         if self.contains(name, TagType.Float):
             return self._tags[name].get()
-        return None
+        return 0.0
 
     def getDouble(self, name):
-        # type: (str) -> DoubleTag | None
+        # type: (str) -> float
         if self.contains(name, TagType.Double):
             return self._tags[name].get()
-        return None
+        return 0.0
 
     def getByteArray(self, name):
-        # type: (str) -> ByteArrayTag | None
+        # type: (str) -> list[int] | None
         if self.contains(name, TagType.ByteArray):
             return self._tags[name].get()
         return None
 
     def getString(self, name):
-        # type: (str) -> StringTag | None
+        # type: (str) -> str | None
         if self.contains(name, TagType.String):
             return self._tags[name].get()
         return None
@@ -869,7 +1018,7 @@ class CompoundTag(Tag):
         return None
 
     def getIntArray(self, name):
-        # type: (str) -> IntArrayTag | None
+        # type: (str) -> list[int] | None
         if self.contains(name, TagType.IntArray):
             return self._tags[name].get()
         return None
