@@ -5,8 +5,7 @@ import client.extraClientApi as extraClientApi
 import common.gameConfig as GameConfig
 from mod_log import logger
 
-from modbe.internal.enum.LogLevel import LogLevel
-from modbe.internal.enum.LogType import LogType
+from modbe.internal.enum.Log import LogLevel, LogType
 
 
 class ModBE(object):
@@ -40,3 +39,4 @@ class ModBE(object):
             logger.info("[" + level + "][" + logArea + "] " + message, *args)
         elif logType == LogType.error:
             logger.error("[" + level + "][" + logArea + "] " + message, *args)
+

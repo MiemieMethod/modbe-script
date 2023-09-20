@@ -3,8 +3,7 @@ import server.extraServerApi as extraServerApi
 import client.extraClientApi as extraClientApi
 
 from modbe.internal.module.ModBE import ModBE
-from modbe.internal.enum.LogLevel import LogLevel
-from modbe.internal.enum.LogType import LogType
+from modbe.internal.enum.Log import LogLevel, LogType
 
 
 class Level(object):

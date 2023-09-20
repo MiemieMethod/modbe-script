@@ -6,8 +6,9 @@ import common.system.eventConf as eventConfig
 from modbe.internal.module.ModBE import ModBE
 from modbe.internal.module.SystemEvent import SystemEvent
 from modbe.internal.module.Level import Level
-from modbe.internal.enum.LogLevel import LogLevel
-from modbe.internal.enum.LogType import LogType
+from modbe.internal.enum.Log import LogLevel, LogType
+
+from modbe.internal.module.Callback import Callback
 
 import functools
 

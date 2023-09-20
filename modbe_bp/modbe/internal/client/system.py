@@ -4,13 +4,10 @@ import client.extraClientApi as extraApi
 import common.system.eventConf as eventConfig
 
 from modbe.internal.module.ModBE import ModBE
-from modbe.internal.enum.LogLevel import LogLevel
-from modbe.internal.enum.LogType import LogType
+from modbe.internal.enum.Log import LogLevel, LogType
 
 ClientSystem = extraApi.GetClientSystemCls()
 eventDict = eventConfig.SystemClientEventDict
-for key in eventDict:
-    print(key + ": " + str(eventDict[key]))
 
 
 class ModBEClientSystem(ClientSystem):

@@ -18,11 +18,13 @@ class SystemEvent(object):
         return namespacedId.split(":")
 
     @staticmethod
-    def executeFunction(userFunc, args):
+    def executeFunction(userFunc, args, **kwargs):
         argSpec = inspect.getargspec(userFunc)
         argCount = len(argSpec.args)
         minArgCount = min(argCount, len(args))
-        partialFunc = functools.partial(userFunc, *args[:minArgCount], **dict(zip(argSpec.args[minArgCount:], [None] * (argCount - len(args)))))
+        keywords = dict(zip(argSpec.args[len(args):], [None] * (argCount - len(args))))
+        keywords.update(kwargs)
+        partialFunc = functools.partial(userFunc, *args[:minArgCount], **keywords)
         partialFunc()
 
     @staticmethod

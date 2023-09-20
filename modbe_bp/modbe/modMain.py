@@ -5,8 +5,7 @@ import mod.server.extraServerApi as extraServerApi
 import mod.client.extraClientApi as extraClientApi
 
 from modbe.internal.module.ModBE import ModBE as Game
-from modbe.internal.enum.LogType import LogType
-from modbe.internal.enum.LogLevel import LogLevel
+from modbe.internal.enum.Log import LogLevel, LogType
 
 
 @Mod.Binding("ModBE", "1.0.0")
