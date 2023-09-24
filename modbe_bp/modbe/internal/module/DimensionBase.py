@@ -1,9 +1,4 @@
 # -*- coding: utf-8 -*-
-from modbe.internal.module.ModBE import ModBE
-
-from modbe.internal.enum.Log import LogLevel, LogType
-from modbe.internal.constant.Component import *
-
 
 class DimensionBase(object):
     registry = {}
@@ -23,54 +18,35 @@ class DimensionBase(object):
     def __eq__(self, other):
         if not isinstance(other, DimensionBase):
             return NotImplemented
-        return self.getId() == other.getId()
+        return self.getDimensionId() == other.getDimensionId()
 
     def __ne__(self, other):
         if not isinstance(other, DimensionBase):
             return NotImplemented
-        return self.getId() != other.getId()
+        return self.getDimensionId() != other.getDimensionId()
 
     def __lt__(self, other):
         if not isinstance(other, DimensionBase):
             return NotImplemented
-        return self.getId() < other.getId()
+        return self.getDimensionId() < other.getDimensionId()
 
     def __le__(self, other):
         if not isinstance(other, DimensionBase):
             return NotImplemented
-        return self.getId() <= other.getId()
+        return self.getDimensionId() <= other.getDimensionId()
 
     def __gt__(self, other):
         if not isinstance(other, DimensionBase):
             return NotImplemented
-        return self.getId() > other.getId()
+        return self.getDimensionId() > other.getDimensionId()
 
     def __ge__(self, other):
         if not isinstance(other, DimensionBase):
             return NotImplemented
-        return self.getId() >= other.getId()
+        return self.getDimensionId() >= other.getDimensionId()
 
-    def getId(self):
+    def __int__(self):
+        return self.getDimensionId()
+
+    def getDimensionId(self):
         return self._id
-
-    def getBlock(self, blockPos):
-        # type: (BlockPos) -> Block
-        pass
-
-    def getLiquidBlock(self, blockPos):
-        # type: (BlockPos) -> Block
-        """
-        仅服务端
-        """
-        pass
-
-    def getExtraBlock(self, blockPos):
-        # type: (BlockPos) -> Block
-        """
-        仅服务端
-        """
-        pass
-
-    def getChunk(self, pos):
-        # type: (ChunkPos) -> LevelChunk
-        pass
