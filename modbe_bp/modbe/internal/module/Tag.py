@@ -462,19 +462,27 @@ class ListTag(Tag):
         return item in self._list
 
     def __add__(self, other):
-        if not isinstance(other, Tag):
+        if isinstance(other, ListTag):
+            return ListTag(self._list + other.getList())
+        elif isinstance(other, Tag):
+            return ListTag(self._list + [other])
+        else:
             return NotImplemented
-        if not isinstance(other, ListTag):
-            return NotImplemented
-        return ListTag(self._list + other.getList())
 
     def __iadd__(self, other):
-        if not isinstance(other, Tag):
+        if isinstance(other, ListTag):
+            self._list += other.getList()
+        elif isinstance(other, Tag):
+            self._list.append(other)
+        else:
             return NotImplemented
-        if not isinstance(other, ListTag):
-            return NotImplemented
-        self._list += other.getList()
         return self
+
+    def __radd__(self, other):
+        if isinstance(other, Tag):
+            return ListTag([other] + self._list)
+        else:
+            return NotImplemented
 
     @staticmethod
     def fromList(rawList, _list=None):
@@ -646,8 +654,6 @@ class CompoundTag(Tag):
         return len(self._tags)
 
     def __add__(self, other):
-        if not isinstance(other, Tag):
-            return NotImplemented
         if not isinstance(other, CompoundTag):
             return NotImplemented
         tags = self._tags.copy()
@@ -655,8 +661,6 @@ class CompoundTag(Tag):
         return CompoundTag(tags)
 
     def __iadd__(self, other):
-        if not isinstance(other, Tag):
-            return NotImplemented
         if not isinstance(other, CompoundTag):
             return NotImplemented
         self._tags.update(other.getTags())

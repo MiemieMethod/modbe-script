@@ -16,24 +16,11 @@ class Block(BlockBase):
         elif ModBE.isClient():
             pass
 
-    def __eq__(self, other):
-        if not isinstance(other, BlockBase):
-            return NotImplemented
-        return self.getBlockIdentifier() == other.getBlockIdentifier() and self.getData() == other.getData()
-
-    def __ne__(self, other):
-        if not isinstance(other, BlockBase):
-            return NotImplemented
-        return self.getBlockIdentifier() != other.getBlockIdentifier() or self.getData() != other.getData()
-
     def __str__(self):
         return "Block(fullName=%s, aux=%s)" % (self._fullName, self._data)
 
     def __repr__(self):
         return "Block(%s, %s)" % (self._fullName, self._data)
-
-    def __hash__(self):
-        return hash((self._fullName, self._data))
 
     @staticmethod
     def fromDict(blockDict):
