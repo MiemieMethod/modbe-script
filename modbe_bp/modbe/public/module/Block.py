@@ -13,7 +13,7 @@ class Block(BlockBase):
             self._states = Block.getStatesFromAux(self._fullName, self._data)
             self._serializationId = CompoundTag().putString("name", self._fullName).putCompound(
                 "states", CompoundTag.fromDict(self._states))
-        if ModBE.isClient():
+        elif ModBE.isClient():
             pass
 
     def __eq__(self, other):
@@ -26,6 +26,15 @@ class Block(BlockBase):
             return NotImplemented
         return self.getBlockIdentifier() != other.getBlockIdentifier() or self.getData() != other.getData()
 
+    def __str__(self):
+        return "Block(fullName=%s, aux=%s)" % (self._fullName, self._data)
+
+    def __repr__(self):
+        return "Block(%s, %s)" % (self._fullName, self._data)
+
+    def __hash__(self):
+        return hash((self._fullName, self._data))
+
     @staticmethod
     def fromDict(blockDict):
         return Block(blockDict["name"], "aux" in blockDict and blockDict["aux"] or 0)
@@ -36,7 +45,7 @@ class Block(BlockBase):
         仅服务端
         """
         if ModBE.isServer():
-            return _blockState.GetBlockStatesFromAuxValue(name, aux)
+            return _blockState_.GetBlockStatesFromAuxValue(name, aux)
         else:
             ModBE.log(LogType.error, LogLevel.error, "ModBE",
                       "Block.getStatesFromAux: Client not supported for this method.")
@@ -47,7 +56,7 @@ class Block(BlockBase):
         仅服务端
         """
         if ModBE.isServer():
-            return _blockState.GetBlockStatesFromAuxValue(name, states)
+            return _blockState_.GetBlockStatesFromAuxValue(name, states)
         else:
             ModBE.log(LogType.error, LogLevel.error, "ModBE",
                       "Block.getAuxFromStates: Client not supported for this method.")
@@ -57,7 +66,7 @@ class Block(BlockBase):
         仅服务端
         """
         if ModBE.isServer():
-            return _blockInfo.GetBlockBasicInfo(self._fullName)
+            return _blockInfo_.GetBlockBasicInfo(self._fullName)
         else:
             ModBE.log(LogType.error, LogLevel.error, "ModBE",
                       "Block._getBlockBasicDict: Client not supported for this method.")

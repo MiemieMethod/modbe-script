@@ -12,6 +12,7 @@ from modbe.internal.module.Callback import Callback
 
 import functools
 
+
 ServerSystem = extraApi.GetServerSystemCls()
 eventDict = eventConfig.SystemServerEventDict
 
@@ -65,3 +66,15 @@ class ModBEServerSystem(ServerSystem):
         do remove for every event in this method
         """
         pass
+
+
+from modbe.public.module.Dimension import Dimension
+from modbe.internal.module.Pos import BlockPos
+from modbe.internal.constant.Component import *
+
+if ModBE.isServer():
+    @Callback.registerCallback("ItemUseBefore")
+    def onItemUseBefore(data):
+        # type: (dict) -> None
+        blocks = _blockInfo_.GetLoadBlocks()
+        print(blocks)

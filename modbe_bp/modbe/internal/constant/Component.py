@@ -9,7 +9,252 @@ from modbe.internal.module.ModBE import ModBE
 
 import functools
 
-__all__ = ["_achievement", "_action", "_actorCollidable", "_actorLoot", "_actorMotion", "_actorOwner", "_actorPushable", "_actorRender", "_armorSlot", "_attr", "_auxValue", "_biome", "_block", "_blockEntityData", "_blockGeometry", "_blockInfo", "_blockState", "_blockUseEventWhiteList", "_breath", "_brightness", "_buff", "_bulletAttributes", "_camera", "_carried", "_chatExtension", "_chestBlock", "_chunkSource", "_cloudMusic", "_collisionBox", "_command", "_controlAi", "_customAudio", "_customItem", "_deathCount", "_device", "_dimension", "_effect", "_effectInfo", "_engineEffectBindControl", "_engineType", "_entityComponent", "_entityEvent", "_exp", "_explosion", "_extraData", "_feature", "_fly", "_fog", "_frameAniControl", "_frameAniEntityBind", "_frameAniNativeEntityBoneBind", "_frameAniSkeletonBind", "_frameAniTrans", "_game", "_gravity", "_health", "_httpToServer", "_hurt", "_interact", "_inventory", "_item", "_itembanned", "_itemInfo", "_lobbyGood", "_lv", "_miniMap", "_mobSpawn", "_modAttr", "_model", "_mouseHook", "_moveTo", "_msg", "_name", "_neApi", "_offHand", "_operation", "_particleControl", "_particleEntityBind", "_particleNativeEntityBoneBind", "_particleSkeletonBind", "_particleSystem", "_particleTrans", "_path", "_persistence", "_pet", "_player", "_playeranim", "_playerView", "_playerKillCount", "_portal", "_pos", "_postprocess", "_queryVariable", "_projectile", "_recipe", "_redStone", "_research", "_ride", "_rot", "_scale", "_seasonMod", "_shareables", "_Shop", "_sign", "_simpleMsg", "_skyRender", "_spawn", "_speed", "_storyline", "_systemAudio", "_tag", "_tame", "_team", "_teamId", "_textBoard", "_textNotifyClient", "_time", "_totalKillCount", "_type", "_vDeliverComp", "_virtualWorld", "_weather"]
+__all__ = [
+    "_achievement",
+    "_action",
+    "_actorCollidable",
+    "_actorLoot",
+    "_actorMotion",
+    "_actorOwner",
+    "_actorPushable",
+    "_actorRender",
+    "_armorSlot",
+    "_attr",
+    "_auxValue",
+    "_biome",
+    "_block",
+    "_blockEntityData",
+    "_blockGeometry",
+    "_blockInfo",
+    "_blockState",
+    "_blockUseEventWhiteList",
+    "_breath",
+    "_brightness",
+    "_buff",
+    "_bulletAttributes",
+    "_camera",
+    "_carried",
+    "_chatExtension",
+    "_chestBlock",
+    "_chunkSource",
+    "_cloudMusic",
+    "_collisionBox",
+    "_command",
+    "_controlAi",
+    "_customAudio",
+    "_customItem",
+    "_deathCount",
+    "_device",
+    "_dimension",
+    "_effect",
+    "_effectInfo",
+    "_engineEffectBindControl",
+    "_engineType",
+    "_entityComponent",
+    "_entityEvent",
+    "_exp",
+    "_explosion",
+    "_extraData",
+    "_feature",
+    "_fly",
+    "_fog",
+    "_frameAniControl",
+    "_frameAniEntityBind",
+    "_frameAniNativeEntityBoneBind",
+    "_frameAniSkeletonBind",
+    "_frameAniTrans",
+    "_game",
+    "_gravity",
+    "_health",
+    "_httpToServer",
+    "_hurt",
+    "_interact",
+    "_inventory",
+    "_item",
+    "_itembanned",
+    "_itemInfo",
+    "_lobbyGood",
+    "_lv",
+    "_miniMap",
+    "_mobSpawn",
+    "_modAttr",
+    "_model",
+    "_mouseHook",
+    "_moveTo",
+    "_msg",
+    "_name",
+    "_neApi",
+    "_offHand",
+    "_operation",
+    "_particleControl",
+    "_particleEntityBind",
+    "_particleNativeEntityBoneBind",
+    "_particleSkeletonBind",
+    "_particleSystem",
+    "_particleTrans",
+    "_path",
+    "_persistence",
+    "_pet",
+    "_player",
+    "_playeranim",
+    "_playerView",
+    "_playerKillCount",
+    "_portal",
+    "_pos",
+    "_postprocess",
+    "_queryVariable",
+    "_projectile",
+    "_recipe",
+    "_redStone",
+    "_research",
+    "_ride",
+    "_rot",
+    "_scale",
+    "_seasonMod",
+    "_shareables",
+    "_Shop",
+    "_sign",
+    "_simpleMsg",
+    "_skyRender",
+    "_spawn",
+    "_speed",
+    "_storyline",
+    "_systemAudio",
+    "_tag",
+    "_tame",
+    "_team",
+    "_teamId",
+    "_textBoard",
+    "_textNotifyClient",
+    "_time",
+    "_totalKillCount",
+    "_type",
+    "_vDeliverComp",
+    "_virtualWorld",
+    "_weather",
+    "_achievement_",
+    "_action_",
+    "_actorCollidable_",
+    "_actorLoot_",
+    "_actorMotion_",
+    "_actorOwner_",
+    "_actorPushable_",
+    "_actorRender_",
+    "_armorSlot_",
+    "_attr_",
+    "_auxValue_",
+    "_biome_",
+    "_block_",
+    "_blockEntityData_",
+    "_blockGeometry_",
+    "_blockInfo_",
+    "_blockState_",
+    "_blockUseEventWhiteList_",
+    "_breath_",
+    "_brightness_",
+    "_buff_",
+    "_bulletAttributes_",
+    "_camera_",
+    "_carried_",
+    "_chatExtension_",
+    "_chestBlock_",
+    "_chunkSource_",
+    "_cloudMusic_",
+    "_collisionBox_",
+    "_command_",
+    "_controlAi_",
+    "_customAudio_",
+    "_customItem_",
+    "_deathCount_",
+    "_device_",
+    "_dimension_",
+    "_effect_",
+    "_effectInfo_",
+    "_engineEffectBindControl_",
+    "_engineType_",
+    "_entityComponent_",
+    "_entityEvent_",
+    "_exp_",
+    "_explosion_",
+    "_extraData_",
+    "_feature_",
+    "_fly_",
+    "_fog_",
+    "_frameAniControl_",
+    "_frameAniEntityBind_",
+    "_frameAniNativeEntityBoneBind_",
+    "_frameAniSkeletonBind_",
+    "_frameAniTrans_",
+    "_game_",
+    "_gravity_",
+    "_health_",
+    "_httpToServer_",
+    "_hurt_",
+    "_interact_",
+    "_inventory_",
+    "_item_",
+    "_itembanned_",
+    "_itemInfo_",
+    "_lobbyGood_",
+    "_lv_",
+    "_miniMap_",
+    "_mobSpawn_",
+    "_modAttr_",
+    "_model_",
+    "_mouseHook_",
+    "_moveTo_",
+    "_msg_",
+    "_name_",
+    "_neApi_",
+    "_offHand_",
+    "_operation_",
+    "_particleControl_",
+    "_particleEntityBind_",
+    "_particleNativeEntityBoneBind_",
+    "_particleSkeletonBind_",
+    "_particleSystem_",
+    "_particleTrans_",
+    "_path_",
+    "_persistence_",
+    "_pet_",
+    "_player_",
+    "_playeranim_",
+    "_playerView_",
+    "_playerKillCount_",
+    "_portal_",
+    "_pos_",
+    "_postprocess_",
+    "_queryVariable_",
+    "_projectile_",
+    "_recipe_",
+    "_redStone_",
+    "_research_",
+    "_ride_",
+    "_rot_",
+    "_scale_",
+    "_seasonMod_",
+    "_shareables_",
+    "_Shop_",
+    "_sign_",
+    "_simpleMsg_",
+    "_skyRender_",
+    "_spawn_",
+    "_speed_",
+    "_storyline_",
+    "_systemAudio_",
+    "_tag_",
+    "_tame_",
+    "_team_",
+    "_teamId_",
+    "_textBoard_",
+    "_textNotifyClient_",
+    "_time_",
+    "_totalKillCount_",
+    "_type_",
+    "_vDeliverComp_",
+    "_virtualWorld_",
+    "_weather_"
+]
 
 # partial component
 _achievement = None
@@ -136,128 +381,128 @@ _virtualWorld = None
 _weather = None
 
 # level specific component
-__achievement = None
-__action = None
-__actorCollidable = None
-__actorLoot = None
-__actorMotion = None
-__actorOwner = None
-__actorPushable = None
-__actorRender = None
-__armorSlot = None
-__attr = None
-__auxValue = None
-__biome = None
-__block = None
-__blockEntityData = None
-__blockGeometry = None
-__blockInfo = None
-__blockState = None
-__blockUseEventWhiteList = None
-__breath = None
-__brightness = None
-__buff = None
-__bulletAttributes = None
-__camera = None
-__carried = None
-__chatExtension = None
-__chestBlock = None
-__chunkSource = None
-__cloudMusic = None
-__collisionBox = None
-__command = None
-__controlAi = None
-__customAudio = None
-__customItem = None
-__deathCount = None
-__device = None
-__dimension = None
-__effect = None
-__effectInfo = None
-__engineEffectBindControl = None
-__engineType = None
-__entityComponent = None
-__entityEvent = None
-__exp = None
-__explosion = None
-__extraData = None
-__feature = None
-__fly = None
-__fog = None
-__frameAniControl = None
-__frameAniEntityBind = None
-__frameAniNativeEntityBoneBind = None
-__frameAniSkeletonBind = None
-__frameAniTrans = None
-__game = None
-__gravity = None
-__health = None
-__httpToServer = None
-__hurt = None
-__interact = None
-__inventory = None
-__item = None
-__itembanned = None
-__itemInfo = None
-__lobbyGood = None
-__lv = None
-__miniMap = None
-__mobSpawn = None
-__modAttr = None
-__model = None
-__mouseHook = None
-__moveTo = None
-__msg = None
-__name = None
-__neApi = None
-__offHand = None
-__operation = None
-__particleControl = None
-__particleEntityBind = None
-__particleNativeEntityBoneBind = None
-__particleSkeletonBind = None
-__particleSystem = None
-__particleTrans = None
-__path = None
-__persistence = None
-__pet = None
-__player = None
-__playeranim = None
-__playerView = None
-__playerKillCount = None
-__portal = None
-__pos = None
-__postprocess = None
-__queryVariable = None
-__projectile = None
-__recipe = None
-__redStone = None
-__research = None
-__ride = None
-__rot = None
-__scale = None
-__seasonMod = None
-__shareables = None
-__Shop = None
-__sign = None
-__simpleMsg = None
-__skyRender = None
-__spawn = None
-__speed = None
-__storyline = None
-__systemAudio = None
-__tag = None
-__tame = None
-__team = None
-__teamId = None
-__textBoard = None
-__textNotifyClient = None
-__time = None
-__totalKillCount = None
-__type = None
-__vDeliverComp = None
-__virtualWorld = None
-__weather = None
+_achievement_ = None
+_action_ = None
+_actorCollidable_ = None
+_actorLoot_ = None
+_actorMotion_ = None
+_actorOwner_ = None
+_actorPushable_ = None
+_actorRender_ = None
+_armorSlot_ = None
+_attr_ = None
+_auxValue_ = None
+_biome_ = None
+_block_ = None
+_blockEntityData_ = None
+_blockGeometry_ = None
+_blockInfo_ = None
+_blockState_ = None
+_blockUseEventWhiteList_ = None
+_breath_ = None
+_brightness_ = None
+_buff_ = None
+_bulletAttributes_ = None
+_camera_ = None
+_carried_ = None
+_chatExtension_ = None
+_chestBlock_ = None
+_chunkSource_ = None
+_cloudMusic_ = None
+_collisionBox_ = None
+_command_ = None
+_controlAi_ = None
+_customAudio_ = None
+_customItem_ = None
+_deathCount_ = None
+_device_ = None
+_dimension_ = None
+_effect_ = None
+_effectInfo_ = None
+_engineEffectBindControl_ = None
+_engineType_ = None
+_entityComponent_ = None
+_entityEvent_ = None
+_exp_ = None
+_explosion_ = None
+_extraData_ = None
+_feature_ = None
+_fly_ = None
+_fog_ = None
+_frameAniControl_ = None
+_frameAniEntityBind_ = None
+_frameAniNativeEntityBoneBind_ = None
+_frameAniSkeletonBind_ = None
+_frameAniTrans_ = None
+_game_ = None
+_gravity_ = None
+_health_ = None
+_httpToServer_ = None
+_hurt_ = None
+_interact_ = None
+_inventory_ = None
+_item_ = None
+_itembanned_ = None
+_itemInfo_ = None
+_lobbyGood_ = None
+_lv_ = None
+_miniMap_ = None
+_mobSpawn_ = None
+_modAttr_ = None
+_model_ = None
+_mouseHook_ = None
+_moveTo_ = None
+_msg_ = None
+_name_ = None
+_neApi_ = None
+_offHand_ = None
+_operation_ = None
+_particleControl_ = None
+_particleEntityBind_ = None
+_particleNativeEntityBoneBind_ = None
+_particleSkeletonBind_ = None
+_particleSystem_ = None
+_particleTrans_ = None
+_path_ = None
+_persistence_ = None
+_pet_ = None
+_player_ = None
+_playeranim_ = None
+_playerView_ = None
+_playerKillCount_ = None
+_portal_ = None
+_pos_ = None
+_postprocess_ = None
+_queryVariable_ = None
+_projectile_ = None
+_recipe_ = None
+_redStone_ = None
+_research_ = None
+_ride_ = None
+_rot_ = None
+_scale_ = None
+_seasonMod_ = None
+_shareables_ = None
+_Shop_ = None
+_sign_ = None
+_simpleMsg_ = None
+_skyRender_ = None
+_spawn_ = None
+_speed_ = None
+_storyline_ = None
+_systemAudio_ = None
+_tag_ = None
+_tame_ = None
+_team_ = None
+_teamId_ = None
+_textBoard_ = None
+_textNotifyClient_ = None
+_time_ = None
+_totalKillCount_ = None
+_type_ = None
+_vDeliverComp_ = None
+_virtualWorld_ = None
+_weather_ = None
 
 if ModBE.isServer():
     _factory = extraServerApi.GetEngineCompFactory()
@@ -349,93 +594,93 @@ if ModBE.isServer():
     _vDeliverComp = functools.partial(server.CreateComponent, **{"nameSpace": "Minecraft", "name": "vDeliverComp"})
     _weather = functools.partial(server.CreateComponent, **{"nameSpace": "Minecraft", "name": "weather"})
 
-    __achievement = _achievement(extraServerApi.GetLevelId())
-    __action = _action(extraServerApi.GetLevelId())
-    __actorCollidable = _actorCollidable(extraServerApi.GetLevelId())
-    __actorLoot = _actorLoot(extraServerApi.GetLevelId())
-    __actorMotion = _actorMotion(extraServerApi.GetLevelId())
-    __actorOwner = _actorOwner(extraServerApi.GetLevelId())
-    __actorPushable = _actorPushable(extraServerApi.GetLevelId())
-    __armorSlot = _armorSlot(extraServerApi.GetLevelId())
-    __attr = _attr(extraServerApi.GetLevelId())
-    __auxValue = _auxValue(extraServerApi.GetLevelId())
-    __biome = _biome(extraServerApi.GetLevelId())
-    __block = _block(extraServerApi.GetLevelId())
-    __blockEntityData = _blockEntityData(extraServerApi.GetLevelId())
-    __blockInfo = _blockInfo(extraServerApi.GetLevelId())
-    __blockState = _blockState(extraServerApi.GetLevelId())
-    __blockUseEventWhiteList = _blockUseEventWhiteList(extraServerApi.GetLevelId())
-    __breath = _breath(extraServerApi.GetLevelId())
-    __buff = _buff(extraServerApi.GetLevelId())
-    __bulletAttributes = _bulletAttributes(extraServerApi.GetLevelId())
-    __carried = _carried(extraServerApi.GetLevelId())
-    __chatExtension = _chatExtension(extraServerApi.GetLevelId())
-    __chestBlock = _chestBlock(extraServerApi.GetLevelId())
-    __chunkSource = _chunkSource(extraServerApi.GetLevelId())
-    __collisionBox = _collisionBox(extraServerApi.GetLevelId())
-    __command = _command(extraServerApi.GetLevelId())
-    __controlAi = _controlAi(extraServerApi.GetLevelId())
-    __customItem = _customItem(extraServerApi.GetLevelId())
-    __deathCount = _deathCount(extraServerApi.GetLevelId())
-    __dimension = _dimension(extraServerApi.GetLevelId())
-    __effect = _effect(extraServerApi.GetLevelId())
-    __engineType = _engineType(extraServerApi.GetLevelId())
-    __entityComponent = _entityComponent(extraServerApi.GetLevelId())
-    __entityEvent = _entityEvent(extraServerApi.GetLevelId())
-    __exp = _exp(extraServerApi.GetLevelId())
-    __explosion = _explosion(extraServerApi.GetLevelId())
-    __extraData = _extraData(extraServerApi.GetLevelId())
-    __feature = _feature(extraServerApi.GetLevelId())
-    __fly = _fly(extraServerApi.GetLevelId())
-    __game = _game(extraServerApi.GetLevelId())
-    __gravity = _gravity(extraServerApi.GetLevelId())
-    __health = _health(extraServerApi.GetLevelId())
-    __httpToServer = _httpToServer(extraServerApi.GetLevelId())
-    __hurt = _hurt(extraServerApi.GetLevelId())
-    __interact = _interact(extraServerApi.GetLevelId())
-    __inventory = _inventory(extraServerApi.GetLevelId())
-    __item = _item(extraServerApi.GetLevelId())
-    __itembanned = _itembanned(extraServerApi.GetLevelId())
-    __itemInfo = _itemInfo(extraServerApi.GetLevelId())
-    __lobbyGood = _lobbyGood(extraServerApi.GetLevelId())
-    __lv = _lv(extraServerApi.GetLevelId())
-    __mobSpawn = _mobSpawn(extraServerApi.GetLevelId())
-    __modAttr = _modAttr(extraServerApi.GetLevelId())
-    __model = _model(extraServerApi.GetLevelId())
-    __moveTo = _moveTo(extraServerApi.GetLevelId())
-    __msg = _msg(extraServerApi.GetLevelId())
-    __name = _name(extraServerApi.GetLevelId())
-    __neApi = _neApi(extraServerApi.GetLevelId())
-    __offHand = _offHand(extraServerApi.GetLevelId())
-    __persistence = _persistence(extraServerApi.GetLevelId())
-    __pet = _pet(extraServerApi.GetLevelId())
-    __player = _player(extraServerApi.GetLevelId())
-    __playerKillCount = _playerKillCount(extraServerApi.GetLevelId())
-    __portal = _portal(extraServerApi.GetLevelId())
-    __pos = _pos(extraServerApi.GetLevelId())
-    __projectile = _projectile(extraServerApi.GetLevelId())
-    __recipe = _recipe(extraServerApi.GetLevelId())
-    __redStone = _redStone(extraServerApi.GetLevelId())
-    __ride = _ride(extraServerApi.GetLevelId())
-    __rot = _rot(extraServerApi.GetLevelId())
-    __scale = _scale(extraServerApi.GetLevelId())
-    __seasonMod = _seasonMod(extraServerApi.GetLevelId())
-    __shareables = _shareables(extraServerApi.GetLevelId())
-    __sign = _sign(extraServerApi.GetLevelId())
-    __simpleMsg = _simpleMsg(extraServerApi.GetLevelId())
-    __spawn = _spawn(extraServerApi.GetLevelId())
-    __speed = _speed(extraServerApi.GetLevelId())
-    __storyline = _storyline(extraServerApi.GetLevelId())
-    __systemAudio = _systemAudio(extraServerApi.GetLevelId())
-    __tag = _tag(extraServerApi.GetLevelId())
-    __tame = _tame(extraServerApi.GetLevelId())
-    __team = _team(extraServerApi.GetLevelId())
-    __teamId = _teamId(extraServerApi.GetLevelId())
-    __time = _time(extraServerApi.GetLevelId())
-    __totalKillCount = _totalKillCount(extraServerApi.GetLevelId())
-    __type = _type(extraServerApi.GetLevelId())
-    __vDeliverComp = _vDeliverComp(extraServerApi.GetLevelId())
-    __weather = _weather(extraServerApi.GetLevelId())
+    _achievement_ = _achievement(extraServerApi.GetLevelId())
+    _action_ = _action(extraServerApi.GetLevelId())
+    _actorCollidable_ = _actorCollidable(extraServerApi.GetLevelId())
+    _actorLoot_ = _actorLoot(extraServerApi.GetLevelId())
+    _actorMotion_ = _actorMotion(extraServerApi.GetLevelId())
+    _actorOwner_ = _actorOwner(extraServerApi.GetLevelId())
+    _actorPushable_ = _actorPushable(extraServerApi.GetLevelId())
+    _armorSlot_ = _armorSlot(extraServerApi.GetLevelId())
+    _attr_ = _attr(extraServerApi.GetLevelId())
+    _auxValue_ = _auxValue(extraServerApi.GetLevelId())
+    _biome_ = _biome(extraServerApi.GetLevelId())
+    _block_ = _block(extraServerApi.GetLevelId())
+    _blockEntityData_ = _blockEntityData(extraServerApi.GetLevelId())
+    _blockInfo_ = _blockInfo(extraServerApi.GetLevelId())
+    _blockState_ = _blockState(extraServerApi.GetLevelId())
+    _blockUseEventWhiteList_ = _blockUseEventWhiteList(extraServerApi.GetLevelId())
+    _breath_ = _breath(extraServerApi.GetLevelId())
+    _buff_ = _buff(extraServerApi.GetLevelId())
+    _bulletAttributes_ = _bulletAttributes(extraServerApi.GetLevelId())
+    _carried_ = _carried(extraServerApi.GetLevelId())
+    _chatExtension_ = _chatExtension(extraServerApi.GetLevelId())
+    _chestBlock_ = _chestBlock(extraServerApi.GetLevelId())
+    _chunkSource_ = _chunkSource(extraServerApi.GetLevelId())
+    _collisionBox_ = _collisionBox(extraServerApi.GetLevelId())
+    _command_ = _command(extraServerApi.GetLevelId())
+    _controlAi_ = _controlAi(extraServerApi.GetLevelId())
+    _customItem_ = _customItem(extraServerApi.GetLevelId())
+    _deathCount_ = _deathCount(extraServerApi.GetLevelId())
+    _dimension_ = _dimension(extraServerApi.GetLevelId())
+    _effect_ = _effect(extraServerApi.GetLevelId())
+    _engineType_ = _engineType(extraServerApi.GetLevelId())
+    _entityComponent_ = _entityComponent(extraServerApi.GetLevelId())
+    _entityEvent_ = _entityEvent(extraServerApi.GetLevelId())
+    _exp_ = _exp(extraServerApi.GetLevelId())
+    _explosion_ = _explosion(extraServerApi.GetLevelId())
+    _extraData_ = _extraData(extraServerApi.GetLevelId())
+    _feature_ = _feature(extraServerApi.GetLevelId())
+    _fly_ = _fly(extraServerApi.GetLevelId())
+    _game_ = _game(extraServerApi.GetLevelId())
+    _gravity_ = _gravity(extraServerApi.GetLevelId())
+    _health_ = _health(extraServerApi.GetLevelId())
+    _httpToServer_ = _httpToServer(extraServerApi.GetLevelId())
+    _hurt_ = _hurt(extraServerApi.GetLevelId())
+    _interact_ = _interact(extraServerApi.GetLevelId())
+    _inventory_ = _inventory(extraServerApi.GetLevelId())
+    _item_ = _item(extraServerApi.GetLevelId())
+    _itembanned_ = _itembanned(extraServerApi.GetLevelId())
+    _itemInfo_ = _itemInfo(extraServerApi.GetLevelId())
+    _lobbyGood_ = _lobbyGood(extraServerApi.GetLevelId())
+    _lv_ = _lv(extraServerApi.GetLevelId())
+    _mobSpawn_ = _mobSpawn(extraServerApi.GetLevelId())
+    _modAttr_ = _modAttr(extraServerApi.GetLevelId())
+    _model_ = _model(extraServerApi.GetLevelId())
+    _moveTo_ = _moveTo(extraServerApi.GetLevelId())
+    _msg_ = _msg(extraServerApi.GetLevelId())
+    _name_ = _name(extraServerApi.GetLevelId())
+    _neApi_ = _neApi(extraServerApi.GetLevelId())
+    _offHand_ = _offHand(extraServerApi.GetLevelId())
+    _persistence_ = _persistence(extraServerApi.GetLevelId())
+    _pet_ = _pet(extraServerApi.GetLevelId())
+    _player_ = _player(extraServerApi.GetLevelId())
+    _playerKillCount_ = _playerKillCount(extraServerApi.GetLevelId())
+    _portal_ = _portal(extraServerApi.GetLevelId())
+    _pos_ = _pos(extraServerApi.GetLevelId())
+    _projectile_ = _projectile(extraServerApi.GetLevelId())
+    _recipe_ = _recipe(extraServerApi.GetLevelId())
+    _redStone_ = _redStone(extraServerApi.GetLevelId())
+    _ride_ = _ride(extraServerApi.GetLevelId())
+    _rot_ = _rot(extraServerApi.GetLevelId())
+    _scale_ = _scale(extraServerApi.GetLevelId())
+    _seasonMod_ = _seasonMod(extraServerApi.GetLevelId())
+    _shareables_ = _shareables(extraServerApi.GetLevelId())
+    _sign_ = _sign(extraServerApi.GetLevelId())
+    _simpleMsg_ = _simpleMsg(extraServerApi.GetLevelId())
+    _spawn_ = _spawn(extraServerApi.GetLevelId())
+    _speed_ = _speed(extraServerApi.GetLevelId())
+    _storyline_ = _storyline(extraServerApi.GetLevelId())
+    _systemAudio_ = _systemAudio(extraServerApi.GetLevelId())
+    _tag_ = _tag(extraServerApi.GetLevelId())
+    _tame_ = _tame(extraServerApi.GetLevelId())
+    _team_ = _team(extraServerApi.GetLevelId())
+    _teamId_ = _teamId(extraServerApi.GetLevelId())
+    _time_ = _time(extraServerApi.GetLevelId())
+    _totalKillCount_ = _totalKillCount(extraServerApi.GetLevelId())
+    _type_ = _type(extraServerApi.GetLevelId())
+    _vDeliverComp_ = _vDeliverComp(extraServerApi.GetLevelId())
+    _weather_ = _weather(extraServerApi.GetLevelId())
 if ModBE.isClient():
     _factory = extraClientApi.GetEngineCompFactory()
     _action = functools.partial(client.CreateComponent, **{"nameSpace": "Minecraft", "name": "action"})
@@ -510,74 +755,74 @@ if ModBE.isClient():
     _type = functools.partial(client.CreateComponent, **{"nameSpace": "Minecraft", "name": "type"})
     _virtualWorld = functools.partial(client.CreateComponent, **{"nameSpace": "Minecraft", "name": "virtualWorld"})
 
-    __action = _action(extraClientApi.GetLevelId())
-    __actorCollidable = _actorCollidable(extraClientApi.GetLevelId())
-    __actorMotion = _actorMotion(extraClientApi.GetLevelId())
-    __actorRender = _actorRender(extraClientApi.GetLevelId())
-    __attr = _attr(extraClientApi.GetLevelId())
-    __auxValue = _auxValue(extraClientApi.GetLevelId())
-    __biome = _biome(extraClientApi.GetLevelId())
-    __block = _block(extraClientApi.GetLevelId())
-    __blockGeometry = _blockGeometry(extraClientApi.GetLevelId())
-    __blockInfo = _blockInfo(extraClientApi.GetLevelId())
-    __blockUseEventWhiteList = _blockUseEventWhiteList(extraClientApi.GetLevelId())
-    __brightness = _brightness(extraClientApi.GetLevelId())
-    __bulletAttributes = _bulletAttributes(extraClientApi.GetLevelId())
-    __camera = _camera(extraClientApi.GetLevelId())
-    __carried = _carried(extraClientApi.GetLevelId())
-    __chunkSource = _chunkSource(extraClientApi.GetLevelId())
-    __cloudMusic = _cloudMusic(extraClientApi.GetLevelId())
-    __collisionBox = _collisionBox(extraClientApi.GetLevelId())
-    __config = _config(extraClientApi.GetLevelId())
-    __customAudio = _customAudio(extraClientApi.GetLevelId())
-    __customItem = _customItem(extraClientApi.GetLevelId())
-    __device = _device(extraClientApi.GetLevelId())
-    __effect = _effect(extraClientApi.GetLevelId())
-    __effectInfo = _effectInfo(extraClientApi.GetLevelId())
-    __engineEffectBindControl = _engineEffectBindControl(extraClientApi.GetLevelId())
-    __engineType = _engineType(extraClientApi.GetLevelId())
-    __fog = _fog(extraClientApi.GetLevelId())
-    __frameAniControl = _frameAniControl(extraClientApi.GetLevelId())
-    __frameAniEntityBind = _frameAniEntityBind(extraClientApi.GetLevelId())
-    __frameAniNativeEntityBoneBind = _frameAniNativeEntityBoneBind(extraClientApi.GetLevelId())
-    __frameAniSkeletonBind = _frameAniSkeletonBind(extraClientApi.GetLevelId())
-    __frameAniTrans = _frameAniTrans(extraClientApi.GetLevelId())
-    __game = _game(extraClientApi.GetLevelId())
-    __health = _health(extraClientApi.GetLevelId())
-    __inventory = _inventory(extraClientApi.GetLevelId())
-    __item = _item(extraClientApi.GetLevelId())
-    __miniMap = _miniMap(extraClientApi.GetLevelId())
-    __modAttr = _modAttr(extraClientApi.GetLevelId())
-    __model = _model(extraClientApi.GetLevelId())
-    __mouseHook = _mouseHook(extraClientApi.GetLevelId())
-    __name = _name(extraClientApi.GetLevelId())
-    __neApi = _neApi(extraClientApi.GetLevelId())
-    __offHand = _offHand(extraClientApi.GetLevelId())
-    __operation = _operation(extraClientApi.GetLevelId())
-    __particleControl = _particleControl(extraClientApi.GetLevelId())
-    __particleEntityBind = _particleEntityBind(extraClientApi.GetLevelId())
-    __particleNativeEntityBoneBind = _particleNativeEntityBoneBind(extraClientApi.GetLevelId())
-    __particleSkeletonBind = _particleSkeletonBind(extraClientApi.GetLevelId())
-    __particleSystem = _particleSystem(extraClientApi.GetLevelId())
-    __particleTrans = _particleTrans(extraClientApi.GetLevelId())
-    __path = _path(extraClientApi.GetLevelId())
-    __player = _player(extraClientApi.GetLevelId())
-    __playeranim = _playeranim(extraClientApi.GetLevelId())
-    __playerView = _playerView(extraClientApi.GetLevelId())
-    __pos = _pos(extraClientApi.GetLevelId())
-    __postprocess = _postprocess(extraClientApi.GetLevelId())
-    __queryVariable = _queryVariable(extraClientApi.GetLevelId())
-    __recipe = _recipe(extraClientApi.GetLevelId())
-    __research = _research(extraClientApi.GetLevelId())
-    __ride = _ride(extraClientApi.GetLevelId())
-    __rot = _rot(extraClientApi.GetLevelId())
-    __seasonMod = _seasonMod(extraClientApi.GetLevelId())
-    __Shop = _Shop(extraClientApi.GetLevelId())
-    __skyRender = _skyRender(extraClientApi.GetLevelId())
-    __systemAudio = _systemAudio(extraClientApi.GetLevelId())
-    __tame = _tame(extraClientApi.GetLevelId())
-    __textBoard = _textBoard(extraClientApi.GetLevelId())
-    __textNotifyClient = _textNotifyClient(extraClientApi.GetLevelId())
-    __time = _time(extraClientApi.GetLevelId())
-    __type = _type(extraClientApi.GetLevelId())
-    __virtualWorld = _virtualWorld(extraClientApi.GetLevelId())
+    _action_ = _action(extraClientApi.GetLevelId())
+    _actorCollidable_ = _actorCollidable(extraClientApi.GetLevelId())
+    _actorMotion_ = _actorMotion(extraClientApi.GetLevelId())
+    _actorRender_ = _actorRender(extraClientApi.GetLevelId())
+    _attr_ = _attr(extraClientApi.GetLevelId())
+    _auxValue_ = _auxValue(extraClientApi.GetLevelId())
+    _biome_ = _biome(extraClientApi.GetLevelId())
+    _block_ = _block(extraClientApi.GetLevelId())
+    _blockGeometry_ = _blockGeometry(extraClientApi.GetLevelId())
+    _blockInfo_ = _blockInfo(extraClientApi.GetLevelId())
+    _blockUseEventWhiteList_ = _blockUseEventWhiteList(extraClientApi.GetLevelId())
+    _brightness_ = _brightness(extraClientApi.GetLevelId())
+    _bulletAttributes_ = _bulletAttributes(extraClientApi.GetLevelId())
+    _camera_ = _camera(extraClientApi.GetLevelId())
+    _carried_ = _carried(extraClientApi.GetLevelId())
+    _chunkSource_ = _chunkSource(extraClientApi.GetLevelId())
+    _cloudMusic_ = _cloudMusic(extraClientApi.GetLevelId())
+    _collisionBox_ = _collisionBox(extraClientApi.GetLevelId())
+    _config_ = _config(extraClientApi.GetLevelId())
+    _customAudio_ = _customAudio(extraClientApi.GetLevelId())
+    _customItem_ = _customItem(extraClientApi.GetLevelId())
+    _device_ = _device(extraClientApi.GetLevelId())
+    _effect_ = _effect(extraClientApi.GetLevelId())
+    _effectInfo_ = _effectInfo(extraClientApi.GetLevelId())
+    _engineEffectBindControl_ = _engineEffectBindControl(extraClientApi.GetLevelId())
+    _engineType_ = _engineType(extraClientApi.GetLevelId())
+    _fog_ = _fog(extraClientApi.GetLevelId())
+    _frameAniControl_ = _frameAniControl(extraClientApi.GetLevelId())
+    _frameAniEntityBind_ = _frameAniEntityBind(extraClientApi.GetLevelId())
+    _frameAniNativeEntityBoneBind_ = _frameAniNativeEntityBoneBind(extraClientApi.GetLevelId())
+    _frameAniSkeletonBind_ = _frameAniSkeletonBind(extraClientApi.GetLevelId())
+    _frameAniTrans_ = _frameAniTrans(extraClientApi.GetLevelId())
+    _game_ = _game(extraClientApi.GetLevelId())
+    _health_ = _health(extraClientApi.GetLevelId())
+    _inventory_ = _inventory(extraClientApi.GetLevelId())
+    _item_ = _item(extraClientApi.GetLevelId())
+    _miniMap_ = _miniMap(extraClientApi.GetLevelId())
+    _modAttr_ = _modAttr(extraClientApi.GetLevelId())
+    _model_ = _model(extraClientApi.GetLevelId())
+    _mouseHook_ = _mouseHook(extraClientApi.GetLevelId())
+    _name_ = _name(extraClientApi.GetLevelId())
+    _neApi_ = _neApi(extraClientApi.GetLevelId())
+    _offHand_ = _offHand(extraClientApi.GetLevelId())
+    _operation_ = _operation(extraClientApi.GetLevelId())
+    _particleControl_ = _particleControl(extraClientApi.GetLevelId())
+    _particleEntityBind_ = _particleEntityBind(extraClientApi.GetLevelId())
+    _particleNativeEntityBoneBind_ = _particleNativeEntityBoneBind(extraClientApi.GetLevelId())
+    _particleSkeletonBind_ = _particleSkeletonBind(extraClientApi.GetLevelId())
+    _particleSystem_ = _particleSystem(extraClientApi.GetLevelId())
+    _particleTrans_ = _particleTrans(extraClientApi.GetLevelId())
+    _path_ = _path(extraClientApi.GetLevelId())
+    _player_ = _player(extraClientApi.GetLevelId())
+    _playeranim_ = _playeranim(extraClientApi.GetLevelId())
+    _playerView_ = _playerView(extraClientApi.GetLevelId())
+    _pos_ = _pos(extraClientApi.GetLevelId())
+    _postprocess_ = _postprocess(extraClientApi.GetLevelId())
+    _queryVariable_ = _queryVariable(extraClientApi.GetLevelId())
+    _recipe_ = _recipe(extraClientApi.GetLevelId())
+    _research_ = _research(extraClientApi.GetLevelId())
+    _ride_ = _ride(extraClientApi.GetLevelId())
+    _rot_ = _rot(extraClientApi.GetLevelId())
+    _seasonMod_ = _seasonMod(extraClientApi.GetLevelId())
+    _Shop_ = _Shop(extraClientApi.GetLevelId())
+    _skyRender_ = _skyRender(extraClientApi.GetLevelId())
+    _systemAudio_ = _systemAudio(extraClientApi.GetLevelId())
+    _tame_ = _tame(extraClientApi.GetLevelId())
+    _textBoard_ = _textBoard(extraClientApi.GetLevelId())
+    _textNotifyClient_ = _textNotifyClient(extraClientApi.GetLevelId())
+    _time_ = _time(extraClientApi.GetLevelId())
+    _type_ = _type(extraClientApi.GetLevelId())
+    _virtualWorld_ = _virtualWorld(extraClientApi.GetLevelId())
