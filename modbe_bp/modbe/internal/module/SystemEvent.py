@@ -3,6 +3,7 @@ import inspect
 import functools
 
 from modbe.internal.constant.Event import eventMaps,eventArgs
+from modbe.internal.constant.Component import *
 
 
 class SystemEvent(object):
@@ -38,3 +39,10 @@ class SystemEvent(object):
                 result = SystemEvent.args[evenId](data)
         return result
 
+    @staticmethod
+    def listenEngineEvent(eventId, instance):
+        namespacedTriple = SystemEvent.namespacedIdToTriple(eventId)
+        setattr(instance, "on" + namespacedTriple[2], functools.partial(instance.response, eventId))
+        getattr(instance, "on" + namespacedTriple[2]).__name__ = "on" + namespacedTriple[2]
+        _item_.GetUserDataInEvent(namespacedTriple[2])
+        instance.ListenForEventEngine(namespacedTriple[2], instance, getattr(instance, "on" + namespacedTriple[2]))

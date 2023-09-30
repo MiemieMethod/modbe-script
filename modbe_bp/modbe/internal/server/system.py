@@ -4,9 +4,9 @@ import server.extraServerApi as extraApi
 import common.system.eventConf as eventConfig
 
 from modbe.internal.module.ModBE import ModBE
-from modbe.internal.module.SystemEvent import SystemEvent
-from modbe.internal.module.Level import Level
 from modbe.internal.enum.Log import LogLevel, LogType
+from modbe.internal.module.SystemEvent import SystemEvent
+from modbe.internal.constant.Component import *
 
 from modbe.internal.module.Callback import Callback
 
@@ -26,14 +26,9 @@ class ModBEServerSystem(ServerSystem):
 
     def listenEngine(self):
         ModBE.log(LogType.debug, LogLevel.verbose, "ModBE", "Server Listening.")
-        item = extraApi.GetEngineCompFactory().CreateItem(Level.getLevelId())
         for key in eventDict:
-            namespacedTriple = SystemEvent.namespacedIdToTriple(key)
-            setattr(self, "on" + namespacedTriple[2], functools.partial(self.response, key))
-            getattr(self, "on" + namespacedTriple[2]).__name__ = "on" + namespacedTriple[2]
-            item.GetUserDataInEvent(namespacedTriple[2])
-            self.ListenForEventEngine(namespacedTriple[2], self, getattr(self, "on" + namespacedTriple[2]))
-            ModBE.log(LogType.debug, LogLevel.verbose, "ModBE", "Server '%s' Listened.", namespacedTriple[2])
+            SystemEvent.listenEngineEvent(key, self)
+            ModBE.log(LogType.debug, LogLevel.verbose, "ModBE", "Server '%s' Listened.", key.split(":")[2])
 
     def response(self, eventId, data=None):
         if data is None:

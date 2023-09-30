@@ -18,6 +18,13 @@ class Dimension(DimensionBase):
     def __repr__(self):
         return "Dimension(%s)" % self._id
 
+    @staticmethod
+    def getLocalDimension():
+        if ModBE.isServer():
+            return Dimension(0)
+        elif ModBE.isClient():
+            return Dimension(_game_.GetCurrentDimension())
+
     def getBlock(self, blockPos):
         # type: (BlockPos) -> Block
         blockPos = blockPos.toBlockPos()
@@ -31,16 +38,6 @@ class Dimension(DimensionBase):
             ModBE.log(LogType.error, LogLevel.error, "ModBE", "Dimension.getBlock: Local player is not currently in this Dimension: %s.", self.getId())
         return None
 
-    @staticmethod
-    def getLocalDimension():
-        """
-        仅客户端
-        """
-        if ModBE.isClient():
-            return Dimension(_game_.GetCurrentDimension())
-        else:
-            ModBE.log(LogType.error, LogLevel.error, "ModBE", "Level.getLocalDimension: Server not supported for this method.")
-
     def getLiquidBlock(self, blockPos):
         # type: (BlockPos) -> Block
         """
@@ -50,9 +47,8 @@ class Dimension(DimensionBase):
         if ModBE.isServer():
             block = _blockInfo_.GetLiquidBlock(blockPos.toTuple(), self.getId())
             return block is not None and Block.fromDict(block) or block
-        if ModBE.isClient():
-            ModBE.log(LogType.error, LogLevel.error, "ModBE",
-                      "Dimension.getLiquidBlock: Client not supported for this method.")
+        elif ModBE.isClient():
+            ModBE.log(LogType.error, LogLevel.error, "ModBE", "Dimension.getLiquidBlock: Client not supported for this method.")
         return None
 
     def getExtraBlock(self, blockPos):
@@ -66,8 +62,7 @@ class Dimension(DimensionBase):
             liquid = self.getLiquidBlock(blockPos)
             if liquid.getBlockIdentifier() != block.getBlockIdentifier():
                 return liquid
-        if ModBE.isClient():
-            ModBE.log(LogType.error, LogLevel.error, "ModBE",
-                      "Dimension.getLiquidBlock: Client not supported for this method.")
+        elif ModBE.isClient():
+            ModBE.log(LogType.error, LogLevel.error, "ModBE", "Dimension.getLiquidBlock: Client not supported for this method.")
         return None
 

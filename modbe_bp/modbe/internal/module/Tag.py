@@ -563,6 +563,12 @@ class ListTag(Tag):
             self._listType = self.get(0).getId()
         return self
 
+    def append(self, tag):
+        """
+        适配Python惯用写法
+        """
+        return self.add(tag)
+
     def put(self, data):
         self._list = data
         self._listType = self.size() > 0 and self.get(0).getId() or TagType.End
@@ -626,7 +632,7 @@ class CompoundTag(Tag):
 
     def __getitem__(self, key):
         tag = self.get(key)
-        if tag.getId() != TagType.List or tag.getId() != TagType.Compound:
+        if tag.getId() != TagType.List and tag.getId() != TagType.Compound:
             return self.get(key).get()
         return self.get(key)
 
@@ -946,11 +952,15 @@ class CompoundTag(Tag):
         self._tags.clear()
 
     def append(self, other):
-        if not isinstance(other, Tag):
-            return NotImplemented
         if not isinstance(other, CompoundTag):
             return NotImplemented
         self._tags.update(other.getTags())
+
+    def update(self, other):
+        """
+        适配Python惯用写法
+        """
+        return self.append(other)
 
     def isEmpty(self):
         return len(self._tags) == 0
@@ -1029,4 +1039,5 @@ class IntArrayTag(Tag):
 
     def copy(self):
         return IntArrayTag(self._data)
+
 
